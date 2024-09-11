@@ -215,16 +215,21 @@ class RedRisingSmiller extends Table
         // Set the colors of the players with HTML color code. The default below is red/green/blue/orange/brown. The
         // number of colors defined here must correspond to the maximum number of players allowed for the gams.
         $gameinfos = $this->getGameinfos();
-        $default_colors = $gameinfos['player_colors'];
+
+        // Randomly order houses then pick a house for each player, this determines color and potentially the first player (Apollo).
+        $available_houses = array_keys($this->houses);
+        shuffle($available_houses);
 
         foreach ($players as $player_id => $player) {
+            $house = array_shift($available_houses);
             // Now you can access both $player_id and $player array
-            $query_values[] = vsprintf("('%s', '%s', '%s', '%s', '%s')", [
+            $query_values[] = vsprintf("('%s', '%s', '%s', '%s', '%s', '%s')", [
                 $player_id,
-                array_shift($default_colors),
+                $this->houses[$house]['color'],
                 $player["player_canal"],
                 addslashes($player["player_name"]),
                 addslashes($player["player_avatar"]),
+                $house,
             ]);
         }
 
@@ -234,12 +239,11 @@ class RedRisingSmiller extends Table
         // additional fields directly here.
         static::DbQuery(
             sprintf(
-                "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar) VALUES %s",
+                "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar, player_house) VALUES %s",
                 implode(",", $query_values)
             )
         );
 
-        $this->reattributeColorsBasedOnPreferences($players, $gameinfos["player_colors"]);
         $this->reloadPlayersBasicInfos();
 
         // Init global values with their initial values.
