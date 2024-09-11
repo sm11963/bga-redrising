@@ -20,17 +20,100 @@
  */
 
 
-// Example:
+ if (!defined("MA_GAME")) {
+    // guard since this included multiple times
+    define("MA_GAME", 1);
+  
+    // Colors
+    define("MA_CARD_COLOR_RED", 0);
+    define("MA_CARD_COLOR_BROWN", 1);
+    define("MA_CARD_COLOR_OBSIDIAN", 2);
+    define("MA_CARD_COLOR_PINK", 3);
+    define("MA_CARD_COLOR_GRAY", 4);
+    define("MA_CARD_COLOR_BLUE", 5);
+    define("MA_CARD_COLOR_YELLOW", 6);
+    define("MA_CARD_COLOR_GREEN", 7);
+    define("MA_CARD_COLOR_VIOLET", 8);
+    define("MA_CARD_COLOR_ORANGE", 9);
+    define("MA_CARD_COLOR_SILVER", 10);
+    define("MA_CARD_COLOR_WHITE", 11);
+    define("MA_CARD_COLOR_BRONZE", 12);
+    define("MA_CARD_COLOR_GOLD", 13);
 
-$this->card_types = [
-    1 => [
-        "card_name" => clienttranslate('Troll'), // ...
+    // Houses
+    define("MA_HOUSE_APOLLO", 0);
+    define("MA_HOUSE_CERES", 1);
+    define("MA_HOUSE_DIANA", 2);
+    define("MA_HOUSE_JUPITER", 3);
+    define("MA_HOUSE_MARS", 4);
+    define("MA_HOUSE_MINERVA", 5);
+  }
+  
+   $this->colors = [
+    MA_CARD_COLOR_RED => [
+      'name' => clienttranslate('red'),
     ],
-    2 => [
-        "card_name" => clienttranslate('Goblin'), // ...
+    MA_CARD_COLOR_BROWN => [
+    'name' => clienttranslate('brown'),
     ],
-    // ...
-];
+    MA_CARD_COLOR_OBSIDIAN => [
+      'name' => clienttranslate('obsidian'),
+    ],
+    MA_CARD_COLOR_PINK => [
+    'name' => clienttranslate('pink'),
+    ],
+    MA_CARD_COLOR_GRAY => [
+      'name' => clienttranslate('gray'),
+    ],
+    MA_CARD_COLOR_BLUE => [
+      'name' => clienttranslate('blue'),
+    ],
+    MA_CARD_COLOR_YELLOW => [
+      'name' => clienttranslate('yellow'),
+    ],
+    MA_CARD_COLOR_GREEN => [
+      'name' => clienttranslate('green'),
+    ],
+    MA_CARD_COLOR_VIOLET => [
+      'name' => clienttranslate('violet'),
+    ],
+    MA_CARD_COLOR_ORANGE => [
+      'name' => clienttranslate('orange'),
+    ],
+    MA_CARD_COLOR_SILVER => [
+      'name' => clienttranslate('silver'),
+    ],
+    MA_CARD_COLOR_WHITE => [
+      'name' => clienttranslate('white'),
+    ],
+    MA_CARD_COLOR_BRONZE => [
+      'name' => clienttranslate('bronze'),
+    ],
+    MA_CARD_COLOR_GOLD => [
+      'name' => clienttranslate('gold'),
+    ],
+  ];
+
+  $this->houses = [
+    MA_HOUSE_APOLLO => [
+        'name' => clienttranslate('apollo')
+    ],
+    MA_HOUSE_CERES => [
+        'name' => clienttranslate('ceres')
+    ],
+    MA_HOUSE_DIANA => [
+        'name' => clienttranslate('diana')
+    ],
+    MA_HOUSE_JUPITER => [
+        'name' => clienttranslate('jupiter')
+    ],
+    MA_HOUSE_MARS => [
+        'name' => clienttranslate('mars')
+    ],
+    MA_HOUSE_MINERVA => [
+        'name' => clienttranslate('minerva')
+    ],
+  ];
 
 
 
