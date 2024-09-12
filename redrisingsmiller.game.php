@@ -212,13 +212,11 @@ class RedRisingSmiller extends Table
      */
     protected function setupNewGame($players, $options = [])
     {
-        // Set the colors of the players with HTML color code. The default below is red/green/blue/orange/brown. The
-        // number of colors defined here must correspond to the maximum number of players allowed for the gams.
-        $gameinfos = $this->getGameinfos();
-
         // Randomly order houses then pick a house for each player, this determines color and potentially the first player (Apollo).
         $available_houses = array_keys($this->houses);
         shuffle($available_houses);
+
+        $apollo_player_id = null;
 
         foreach ($players as $player_id => $player) {
             $house = array_shift($available_houses);
@@ -231,6 +229,10 @@ class RedRisingSmiller extends Table
                 addslashes($player["player_avatar"]),
                 $house,
             ]);
+
+            if ($house == MA_HOUSE_APOLLO) {
+                $apollo_player_id = $player_id;
+            }
         }
 
         // Create players based on generic information.
@@ -262,7 +264,12 @@ class RedRisingSmiller extends Table
         // TODO: Setup the initial game situation here.
 
         // Activate first player once everything has been initialized and ready.
-        $this->activeNextPlayer();
+        // If we have a player with House Apollo, they go first - retain the same natural order with Apollo starting
+        if (is_null($apollo_player_id)) {
+            $this->activeNextPlayer();
+        } else {
+            $this->gamestate->changeActivePlayer($apollo_player_id);
+        }
     }
 
     /**
