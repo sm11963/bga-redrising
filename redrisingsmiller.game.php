@@ -212,42 +212,8 @@ class RedRisingSmiller extends Table
      */
     protected function setupNewGame($players, $options = [])
     {
-        // Randomly order houses then pick a house for each player, this determines color and potentially the first player (Apollo).
-        $available_houses = array_keys($this->houses);
-        shuffle($available_houses);
-
-        $apollo_player_id = null;
-
-        foreach ($players as $player_id => $player) {
-            $house = array_shift($available_houses);
-            // Now you can access both $player_id and $player array
-            $query_values[] = vsprintf("('%s', '%s', '%s', '%s', '%s', '%s')", [
-                $player_id,
-                $this->houses[$house]['color'],
-                $player["player_canal"],
-                addslashes($player["player_name"]),
-                addslashes($player["player_avatar"]),
-                $house,
-            ]);
-
-            if ($house == MA_HOUSE_APOLLO) {
-                $apollo_player_id = $player_id;
-            }
-        }
-
-        // Create players based on generic information.
-        //
-        // NOTE: You can add extra field on player table in the database (see dbmodel.sql) and initialize
-        // additional fields directly here.
-        static::DbQuery(
-            sprintf(
-                "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar, player_house) VALUES %s",
-                implode(",", $query_values)
-            )
-        );
-
-        $this->reloadPlayersBasicInfos();
-
+        $players = $this->initPlayers($players);
+        
         // Init global values with their initial values.
 
         // Dummy content.
@@ -264,7 +230,55 @@ class RedRisingSmiller extends Table
         // TODO: Setup the initial game situation here.
 
         // Activate first player once everything has been initialized and ready.
-        // If we have a player with House Apollo, they go first - retain the same natural order with Apollo starting
+        $this->activateFirstPlayer($players);
+    }
+    
+    /**
+     * Intitialize the players.
+     * 
+     * Assign House, Color, and basic initial player info.
+     */
+    private function initPlayers($players): array {
+        // Randomly order Houses, then pick a house for each player, this determines color and potentially the first player (Apollo).
+        $available_houses = array_keys($this->houses);
+        shuffle($available_houses);
+
+        foreach ($players as $player_id => $player) {
+            $house = array_shift($available_houses);
+            $players[$player_id]["player_house"] = $house;
+            // Now you can access both $player_id and $player array
+            $query_values[] = vsprintf("('%s', '%s', '%s', '%s', '%s', '%s')", [
+                $player_id,
+                $this->houses[$house]['color'],
+                $player["player_canal"],
+                addslashes($player["player_name"]),
+                addslashes($player["player_avatar"]),
+                $house,
+            ]);
+        }
+
+       static::DbQuery(
+            sprintf(
+                "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar, player_house) VALUES %s",
+                implode(",", $query_values)
+            )
+        );
+
+        $this->reloadPlayersBasicInfos();
+       
+        return $players;
+    }
+
+    /**
+     * Activate the first player.
+     * 
+     * Either the default implementation first player or, if exists, the player assigned House Apollo.
+     */
+    private function activateFirstPlayer($players) {
+        // If we have a player with House Apollo, they go first; retain the same natural order with Apollo starting
+        $apollo_player_id = array_key_first(array_filter($players, function($p) { 
+            return $p["player_house"] == MA_HOUSE_APOLLO; 
+        }));
         if (is_null($apollo_player_id)) {
             $this->activeNextPlayer();
         } else {
