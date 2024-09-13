@@ -18,8 +18,12 @@ declare(strict_types=1);
 
 require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
 
+require_once ('modules/tokens.php');   
+
 class RedRisingSmiller extends Table
 {
+    private $tokens;   
+
     /**
      * Your global variables labels:
      *
@@ -40,6 +44,8 @@ class RedRisingSmiller extends Table
             "my_first_game_variant" => 100,
             "my_second_game_variant" => 101,
         ]);
+
+        $this->tokens = new TokenCounter();
     }
 
     /**
@@ -213,7 +219,9 @@ class RedRisingSmiller extends Table
     protected function setupNewGame($players, $options = [])
     {
         $players = $this->initPlayers($players);
-        
+
+        $this->initTokens();
+
         // Init global values with their initial values.
 
         // Dummy content.
@@ -231,6 +239,31 @@ class RedRisingSmiller extends Table
 
         // Activate first player once everything has been initialized and ready.
         $this->activateFirstPlayer($players);
+    }
+
+    private function initTokens() {
+        // MAYBE: Small optimization to just pass in players as a parameter instead of another DB query here.
+        $players = $this->loadPlayersBasicInfos();
+
+        $tokens = array ();
+        foreach ( array_keys($players) as $player_id ) {
+            array_push($tokens, 
+                [
+                    'key' => "influence_$player_id",
+                    'nbr' => 0,
+                ],
+                [
+                    'key' => "helium_$player_id",
+                    'nbr' => 0,
+                ],
+                [
+                    'key' => "fleet_track_$player_id",
+                    'nbr' => 0,
+                ]
+            );
+        }
+
+        $this->tokens->createTokens($tokens);
     }
     
     /**

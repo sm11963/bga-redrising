@@ -34,3 +34,10 @@
 -- ALTER TABLE `player` ADD `player_my_custom_field` INT UNSIGNED NOT NULL DEFAULT '0';
 
 ALTER TABLE `player` ADD `player_house` INT NOT NULL DEFAULT '-1';
+
+
+CREATE TABLE IF NOT EXISTS `token` (
+  `token_key` varchar(32) NOT NULL,
+  `token_nbr` int(10),
+  PRIMARY KEY (`token_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
