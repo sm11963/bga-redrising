@@ -25,9 +25,46 @@
     Please REMOVE this comment before publishing your game on BGA
 -->
 
+<div id="myhand_wrap" class="whiteblock">
+    <div id="myhand">
+    </div>
+</div>
 
-This is your game interface. You can edit this HTML in your ".tpl" file.
+<div id="gameboard">
 
+    <div class="whiteblock boardlocation location_jupiter">
+        <div class="locationname" style="color:#0000FF">
+            Jupiter
+        </div>
+        <div class="locationcards" id="location_jupiter_cards">
+        </div>
+    </div>
+
+    <div class="whiteblock boardlocation location_mars">
+        <div class="locationname" style="color:#FF0000">
+            Mars
+        </div>
+        <div class="locationcards" id="location_mars_cards">
+        </div>
+    </div>
+
+    <div class="whiteblock boardlocation location_luna">
+        <div class="locationname" style="color:#FFFF00">
+            Luna
+        </div>
+        <div class="locationcards" id="location_luna_cards">
+        </div>
+    </div>
+
+    <div class="whiteblock boardlocation location_institute">
+        <div class="locationname" style="color:#00FF00">
+            Minerva
+        </div>
+        <div class="locationcards" id="location_institute_cards">
+        </div>
+    </div>
+
+</div>
 
 <script type="text/javascript">
 
