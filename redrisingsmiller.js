@@ -18,7 +18,8 @@
 define([
     "dojo","dojo/_base/declare",
     "ebg/core/gamegui",
-    "ebg/counter"
+    "ebg/counter",
+    "ebg/stock",
 ],
 function (dojo, declare) {
     return declare("bgagame.redrisingsmiller", ebg.core.gamegui, {
@@ -66,6 +67,21 @@ function (dojo, declare) {
                     <span id="fleet_tracker_${player_id}">${this.getTrackerCount(gamedatas.tokens, 'fleet_progress', player_id)}</span>
                 </div>`
                 dojo.place(div, player_board_div);
+            }
+
+            this.playerHand = new ebg.stock();
+            this.playerHand.create( this, $('myhand'), 134, 182);
+            this.playerHand.backgroundSize = '134px 182px';
+
+            for (var i=0; i<112; i++) {
+                this.playerHand.addItemType( i, i, g_gamethemeurl+'img/mock_card.jpg', 0);
+            }
+
+            this.playerHand.onItemCreate = dojo.hitch( this, 'onStockItemCreate' );
+
+            for (var i in this.gamedatas.hand) {
+                var card = this.gamedatas.hand[i];
+                this.playerHand.addToStockWithId(card.type, card.id);
             }
             
             // TODO: Set up your game interface here, according to "gamedatas"
@@ -164,6 +180,11 @@ function (dojo, declare) {
         getTrackerCount: function( tokens, tracker_type, player_id )
         {
             return tokens[`${tracker_type}_${player_id}`]['state'];
+        },
+
+        onStockItemCreate: function ( card_div, card_type_id, card_id )
+        {
+            dojo.place(`<span class="card_title_type">${card_id} [${card_type_id}]</span>`, card_div.id)
         },
 
         /*

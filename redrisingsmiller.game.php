@@ -198,6 +198,7 @@ class RedRisingSmiller extends Table
         $result["player_hand_nbrs"] = $this->cards->countCardsByLocationArgs( 'hand' );
         $result["ma_houses"] = $this->houses;
         $result["tokens"] = $this->tokens->getAllTokensInfo();
+        $result['hand'] = $this->cards->getCardsInLocation( 'hand', $current_player_id );
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
 
