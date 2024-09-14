@@ -108,3 +108,37 @@
 .rr_player_board span {
     margin-right: 5px;
 }
+
+.pbtrackericon {
+    width: 20px;
+    height: 21px;
+    display: inline-block;
+}
+
+.heliumicon {
+    background-color: red;
+}
+
+.influenceicon_apollo, .fleeticon_apollo {
+    background-color: #D7CA4F;
+}
+
+.influenceicon_ceres, .fleeticon_ceres {
+    background-color: #937A40;
+}
+
+.influenceicon_diana, .fleeticon_diana {
+    background-color: #008D50;
+}
+
+.influenceicon_jupiter, .fleeticon_jupiter {
+    background-color: #007EAC;
+}
+
+.influenceicon_mars, .fleeticon_mars {
+    background-color: #C13834;
+}
+
+.influenceicon_minerva, .fleeticon_minerva {
+    background-color: #692A64;
+}

@@ -194,13 +194,10 @@ class RedRisingSmiller extends Table
         // WARNING: We must only return information visible by the current player.
         $current_player_id = (int) $this->getCurrentPlayerId();
 
-        // Get information about players.
-        // NOTE: you can retrieve some extra field you added for "player" table in `dbmodel.sql` if you need it.
-        $result["players"] = $this->getCollectionFromDb(
-            "SELECT player_id, player_score score FROM player"
-        );
-
+        $result["players"] = $this->loadPlayers();
         $result["player_hand_nbrs"] = $this->cards->countCardsByLocationArgs( 'hand' );
+        $result["ma_houses"] = $this->houses;
+        $result["tokens"] = $this->tokens->getAllTokensInfo();
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
 
@@ -274,6 +271,15 @@ class RedRisingSmiller extends Table
         }
 
         $this->tokens->createTokens($tokens, 'board');
+    }
+
+    public function debug_inc_tracker($type, $player_id) {
+        $token_key = "{$type}_{$player_id}";
+        $value = $this->tokens->getTokenState($token_key);
+        $max_value = $this->token_types[$type]['max'];
+        if (is_null($max_value) || $value < $max_value) {
+            $this->tokens->setTokenState($token_key, $value+1);
+        }
     }
 
     public function debug_delete_cards() {

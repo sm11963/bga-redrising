@@ -97,29 +97,35 @@
   // NOTE - if updating *colors*, make sure to update gameinfos.inc.php for player_colors as well!
   $this->houses = [
     MA_HOUSE_APOLLO => [
-        'name' => clienttranslate('apollo'),
-        'color' => 'D7CA4F',
+      'name_key' => 'apollo',
+      'name' => clienttranslate('apollo'),
+      'color' => 'D7CA4F',
     ],
     MA_HOUSE_CERES => [
-        'name' => clienttranslate('ceres'),
-        'color' => '937A40',
+      'name_key' => 'ceres',
+      'name' => clienttranslate('ceres'),
+      'color' => '937A40',
     ],
     MA_HOUSE_DIANA => [
-        'name' => clienttranslate('diana'),
-        'color' => '008D50',
-      ],
+      'name_key' => 'diana',
+      'name' => clienttranslate('diana'),
+      'color' => '008D50',
+    ],
     MA_HOUSE_JUPITER => [
-        'name' => clienttranslate('jupiter'),
-        'color' => '007EAC',
-      ],
+      'name_key' => 'jupiter',
+      'name' => clienttranslate('jupiter'),
+      'color' => '007EAC',
+    ],
     MA_HOUSE_MARS => [
-        'name' => clienttranslate('mars'),
-        'color' => 'C13834',
+      'name_key' => 'mars',
+      'name' => clienttranslate('mars'),
+      'color' => 'C13834',
     ],
     MA_HOUSE_MINERVA => [
-        'name' => clienttranslate('minerva'),
-        'color' => '692A64',
-      ],
+      'name_key' => 'minerva',
+      'name' => clienttranslate('minerva'),
+      'color' => '692A64',
+    ],
   ];
 
   /**

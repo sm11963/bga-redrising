@@ -58,6 +58,12 @@ function (dojo, declare) {
                 var div = `<div class="rr_player_board">
                     <img src="https://x.boardgamearena.net/data/themereleases/220106-1001/img/common/hand.png" class="imgtext cardhandcount">
                     <span id="card_hand_nbr_${player_id}" class="cardhandcount">${hand_count}</span>
+                    <div class="imgtext pbtrackericon heliumicon"></div>
+                    <span id="helium_tracker_${player_id}">${this.getTrackerCount(gamedatas.tokens, 'helium', player_id)}</span>
+                    <div class="imgtext pbtrackericon influenceicon_${gamedatas.ma_houses[player['house']]['name_key']}"></div>
+                    <span id="influence_tracker_${player_id}">${this.getTrackerCount(gamedatas.tokens, 'influence', player_id)}</span>
+                    <div class="imgtext pbtrackericon fleeticon_${gamedatas.ma_houses[player['house']]['name_key']}"></div>
+                    <span id="fleet_tracker_${player_id}">${this.getTrackerCount(gamedatas.tokens, 'fleet_progress', player_id)}</span>
                 </div>`
                 dojo.place(div, player_board_div);
             }
@@ -155,6 +161,11 @@ function (dojo, declare) {
         ///////////////////////////////////////////////////
         //// Utility methods
         
+        getTrackerCount: function( tokens, tracker_type, player_id )
+        {
+            return tokens[`${tracker_type}_${player_id}`]['state'];
+        },
+
         /*
         
             Here, you can defines some utility methods that you can use everywhere in your javascript

@@ -477,6 +477,14 @@ class Tokens extends APP_GameClass {
         return $result;
     }
 
+    /**
+     * Get all tokens info
+     */
+    function getAllTokensInfo(): array {
+        $sql = $this->getSelectQuery();
+        return $this->getCollectionFromDb($sql);
+    }
+
     function countTokensInLocation($location, $state = null) {
         self::checkLocation($location, true);
         self::checkState($state, true);
