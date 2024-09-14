@@ -200,6 +200,8 @@ class RedRisingSmiller extends Table
             "SELECT player_id, player_score score FROM player"
         );
 
+        $result["player_hand_nbrs"] = $this->cards->countCardsByLocationArgs( 'hand' );
+
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
 
         return $result;

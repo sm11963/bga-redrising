@@ -52,8 +52,14 @@ function (dojo, declare) {
             for( var player_id in gamedatas.players )
             {
                 var player = gamedatas.players[player_id];
+                var hand_count = gamedatas.player_hand_nbrs[player_id];
                          
-                // TODO: Setting up players boards if needed
+                var player_board_div = $('player_board_'+player_id);
+                var div = `<div class="rr_player_board">
+                    <img src="https://x.boardgamearena.net/data/themereleases/220106-1001/img/common/hand.png" class="imgtext cardhandcount">
+                    <span id="card_hand_nbr_${player_id}" class="cardhandcount">${hand_count}</span>
+                </div>`
+                dojo.place(div, player_board_div);
             }
             
             // TODO: Set up your game interface here, according to "gamedatas"

@@ -96,4 +96,15 @@
     background-color: #FFFFFF;
 }
 
+.rr_player_board {
+    margin-left: 5px;
+    margin-top: 5px;
+}
 
+.rr_player_board imgtext {
+    margin-right: 3px;
+}
+
+.rr_player_board span {
+    margin-right: 5px;
+}
