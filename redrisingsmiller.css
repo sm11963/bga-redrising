@@ -126,3 +126,7 @@
 .fleeticon {
     background-color: blue;
 }
+
+.locationcards .stockitem {
+    margin: 5px;
+}

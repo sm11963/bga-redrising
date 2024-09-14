@@ -194,13 +194,18 @@ class RedRisingSmiller extends Table
         // WARNING: We must only return information visible by the current player.
         $current_player_id = (int) $this->getCurrentPlayerId();
 
-        $result["players"] = $this->loadPlayers();
-        $result["player_hand_nbrs"] = $this->cards->countCardsByLocationArgs( 'hand' );
-        $result["ma_houses"] = $this->houses;
-        $result["tokens"] = $this->tokens->getAllTokensInfo();
+        $result['players'] = $this->loadPlayers();
+        $result['player_hand_nbrs'] = $this->cards->countCardsByLocationArgs( 'hand' );
+        $result['ma_houses'] = $this->houses;
+        $result['ma_board_locations'] = $this->board_locations;
+        $result['tokens'] = $this->tokens->getAllTokensInfo();
         $result['hand'] = $this->cards->getCardsInLocation( 'hand', $current_player_id );
-
-        // TODO: Gather all information about current game situation (visible by player $current_player_id).
+        $result['board_locations'] = [];
+        foreach ($this->board_locations as $location_id => $location_info) {
+            $result['board_locations'][$location_id] = [
+                'cards' => $this->cards->getCardsInLocation( "board_location_$location_id", null, 'location_arg' )
+            ];
+        }
 
         return $result;
     }
@@ -310,7 +315,7 @@ class RedRisingSmiller extends Table
         $this->notifyAllPlayers('top_card', '', ['card' => $card ]);
 
         foreach( $players as $player_id => $player ) {
-            $num_cards;
+            $num_cards = null;
 
             if ($player['house'] == MA_HOUSE_CERES) {
                 $num_cards = 6;
@@ -324,7 +329,12 @@ class RedRisingSmiller extends Table
             $this->notifyPlayer( $player_id, 'newHand', '', ['cards' => $cards] );
         }
 
-        // TODO: Deal cards to board locations
+        foreach ( array_keys($this->board_locations) as $location_id) {
+            $cards = [];
+            for ($i = 0; $i < 2; $i++) {
+                $cards [] = $this->cards->pickCardForLocation( 'deck', "board_location_$location_id", $i);
+            }
+        }
     }
     
     /**

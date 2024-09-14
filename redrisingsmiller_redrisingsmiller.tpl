@@ -34,7 +34,7 @@
 
     <div class="whiteblock boardlocation location_jupiter">
         <div class="locationname" style="color:#0000FF">
-            Jupiter
+            JUPITER
         </div>
         <div class="locationcards" id="location_jupiter_cards">
         </div>
@@ -42,7 +42,7 @@
 
     <div class="whiteblock boardlocation location_mars">
         <div class="locationname" style="color:#FF0000">
-            Mars
+            MARS
         </div>
         <div class="locationcards" id="location_mars_cards">
         </div>
@@ -50,7 +50,7 @@
 
     <div class="whiteblock boardlocation location_luna">
         <div class="locationname" style="color:#FFFF00">
-            Luna
+            LUNA
         </div>
         <div class="locationcards" id="location_luna_cards">
         </div>
@@ -58,7 +58,7 @@
 
     <div class="whiteblock boardlocation location_institute">
         <div class="locationname" style="color:#00FF00">
-            Minerva
+            THE INSTITUTE
         </div>
         <div class="locationcards" id="location_institute_cards">
         </div>

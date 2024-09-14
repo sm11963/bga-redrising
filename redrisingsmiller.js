@@ -69,20 +69,41 @@ function (dojo, declare) {
                 dojo.place(div, player_board_div);
             }
 
-            this.playerHand = new ebg.stock();
-            this.playerHand.create( this, $('myhand'), 134, 182);
-            this.playerHand.backgroundSize = '134px 182px';
+            this.playerHand = this.createStock('myhand');
+            this.boardLocationStocks = {};
 
-            for (var i=0; i<112; i++) {
-                this.playerHand.addItemType( i, i, g_gamethemeurl+'img/mock_card.jpg', 0);
-            }
+            for (var location_id in gamedatas.ma_board_locations) {
+                var location_info =  gamedatas.ma_board_locations[location_id];
+                var stock = this.createStock( `location_${location_info.name_key}_cards` );
+                stock.autowidth = false; // this is required so it obeys the width set above
+                stock.use_vertical_overlap_as_offset = false; // this is to use normal vertical_overlap
+                stock.vertical_overlap = 75; // overlap
+                stock.horizontal_overlap  = -1; // current bug in stock - this is needed to enable z-index on overlapping items
+                stock.item_margin = 0; // has to be 0 if using overlap
 
-            this.playerHand.onItemCreate = dojo.hitch( this, 'onStockItemCreate' );
+                this.boardLocationStocks[location_id] = stock;
 
-            for (var i in this.gamedatas.hand) {
-                var card = this.gamedatas.hand[i];
+                var location_cards = gamedatas.board_locations[location_id].cards;
+                                
+                var weights = {};
+                for (var i in location_cards) {
+                    var card = location_cards[i];
+                    weights[toint(card.type)] = toint(card.location_arg);
+                    stock.addToStockWithId(card.type, card.id);
+                }
+
+                // Set weights to order cards correctly (based on game state) in the stock
+                for (var i in stock.item_type) {
+                    weights[i] = weights[i] ?? -1;
+                }
+                stock.changeItemsWeight(weights);
+           }
+
+            for (var i in gamedatas.hand) {
+                var card = gamedatas.hand[i];
                 this.playerHand.addToStockWithId(card.type, card.id);
             }
+
             
             // TODO: Set up your game interface here, according to "gamedatas"
             
@@ -185,6 +206,21 @@ function (dojo, declare) {
         onStockItemCreate: function ( card_div, card_type_id, card_id )
         {
             dojo.place(`<span class="card_title_type">${card_id} [${card_type_id}]</span>`, card_div.id)
+        },
+
+        createStock: function ( container_div_id )
+        {
+            var stock = new ebg.stock();
+            stock.create( this, $(container_div_id), 134, 182);
+            stock.backgroundSize = '134px 182px';
+
+            for (var i=0; i<112; i++) {
+                stock.addItemType( i, i, g_gamethemeurl+'img/mock_card.jpg', 0);
+            }
+
+            stock.onItemCreate = dojo.hitch( this, 'onStockItemCreate' );
+
+            return stock;
         },
 
         /*

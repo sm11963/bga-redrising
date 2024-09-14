@@ -47,6 +47,11 @@
     define("MA_HOUSE_JUPITER", 3);
     define("MA_HOUSE_MARS", 4);
     define("MA_HOUSE_MINERVA", 5);
+
+    define("MA_BOARD_LOCATION_JUPITER", 0);
+    define("MA_BOARD_LOCATION_MARS", 1);
+    define("MA_BOARD_LOCATION_LUNA", 2);
+    define("MA_BOARD_LOCATION_INSTITUTE", 3);
   }
   
    $this->colors = [
@@ -126,6 +131,29 @@
       'name_key' => 'minerva',
       'name' => clienttranslate('minerva'),
       'color' => '692A64',
+    ],
+  ];
+
+  $this->board_locations = [
+    MA_BOARD_LOCATION_JUPITER => [
+      'name_key' => 'jupiter',
+      'name' => clienttranslate('JUPITER'),
+      'color' => '0000FF',
+    ],
+    MA_BOARD_LOCATION_MARS => [
+      'name_key' => 'mars',
+      'name' => clienttranslate('MARS'),
+      'color' => 'FF0000',
+    ],
+    MA_BOARD_LOCATION_LUNA => [
+      'name_key' => 'luna',
+      'name' => clienttranslate('LUNA'),
+      'color' => '00FFFF',
+    ],
+    MA_BOARD_LOCATION_INSTITUTE => [
+      'name_key' => 'institute',
+      'name' => clienttranslate('THE INSTITUTE'),
+      'color' => '00FF00',
     ],
   ];
 
