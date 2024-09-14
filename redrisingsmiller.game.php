@@ -45,7 +45,7 @@ class RedRisingSmiller extends Table
             "my_second_game_variant" => 101,
         ]);
 
-        $this->tokens = new TokenCounter();
+        $this->tokens = new Tokens();
     }
 
     /**
@@ -246,24 +246,24 @@ class RedRisingSmiller extends Table
         $players = $this->loadPlayersBasicInfos();
 
         $tokens = array ();
-        foreach ( array_keys($players) as $player_id ) {
-            array_push($tokens, 
-                [
-                    'key' => "influence_$player_id",
-                    'nbr' => 0,
-                ],
-                [
-                    'key' => "helium_$player_id",
-                    'nbr' => 0,
-                ],
-                [
-                    'key' => "fleet_track_$player_id",
-                    'nbr' => 0,
-                ]
-            );
+        foreach ( $this->token_types as $token_type => $token_info ) {
+            if ($token_info['type'] == 'tracker') {
+                foreach ( array_keys($players) as $player_id ) {
+                    $tokens [] = [
+                        'key' => "{$token_type}_{$player_id}",
+                        'state' => 0,
+                    ];
+                }
+            } elseif ($token_info['type'] == 'token') {
+                $tokens [] = [
+                    'key' => "{$token_type}",
+                    'location' => 'limbo',
+                    'state' => 0,
+                ];
+            }
         }
 
-        $this->tokens->createTokens($tokens);
+        $this->tokens->createTokens($tokens, 'board');
     }
     
     /**

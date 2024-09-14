@@ -122,6 +122,31 @@
       ],
   ];
 
+  /**
+   * Game tokens used (distinct from cards).
+   * 
+   * 'type'
+   *    - tracker: Simple counter per player, starts at 0, may have a 'max' value.
+   *    - token: Game piece to be assigned to a location (player or limbo)
+   */
+  $this->token_types = [
+    'helium' => [
+      'type' => 'tracker',
+      'max' => null,
+    ],
+    'influence' => [
+      'type' => 'tracker',
+      'max' => 10,
+    ],
+    'fleet_progress' => [
+      'type' => 'tracker',
+      'max' => 10,
+    ],
+    'sovereign' => [
+      'type' => 'token',
+    ]
+  ];
+
 
 
 
