@@ -23,6 +23,7 @@ require_once ('modules/tokens.php');
 class RedRisingSmiller extends Table
 {
     private $tokens;   
+    private $cards;
 
     /**
      * Your global variables labels:
@@ -46,6 +47,8 @@ class RedRisingSmiller extends Table
         ]);
 
         $this->tokens = new Tokens();
+        $this->cards = $this->getNew( "module.common.deck" );
+        $this->cards->init( "card" );
     }
 
     /**
@@ -222,6 +225,8 @@ class RedRisingSmiller extends Table
 
         $this->initTokens();
 
+        $this->initCards();
+
         // Init global values with their initial values.
 
         // Dummy content.
@@ -241,6 +246,9 @@ class RedRisingSmiller extends Table
         $this->activateFirstPlayer($players);
     }
 
+    /**
+     * Create all game tokens/trackers and initialize with starting state.
+     */
     private function initTokens() {
         // MAYBE: Small optimization to just pass in players as a parameter instead of another DB query here.
         $players = $this->loadPlayersBasicInfos();
@@ -264,6 +272,50 @@ class RedRisingSmiller extends Table
         }
 
         $this->tokens->createTokens($tokens, 'board');
+    }
+
+    public function debug_delete_cards() {
+        $this->DbQuery("DELETE FROM card;");
+    }
+
+    /**
+     * Create all cards and perform game setup (deal cards to players and locations on board)
+     */
+    private function initCards() {
+        // MAYBE: Small optimization to just pass in players as a parameter instead of another DB query here.
+        $players = $this->loadPlayers();
+
+        $cards = array();
+        for ($i = 0; $i < 112; $i++) {
+            $cards [] = [
+                'type' => $i,
+                'type_arg' => $i,
+                'nbr' => 1,
+            ];
+        }
+
+        $this->cards->createCards( $cards, 'deck' );
+        $this->cards->shuffle( 'deck' );
+
+        $card = $this->cards->getCardOnTop( 'deck' );
+        $this->notifyAllPlayers('top_card', '', ['card' => $card ]);
+
+        foreach( $players as $player_id => $player ) {
+            $num_cards;
+
+            if ($player['house'] == MA_HOUSE_CERES) {
+                $num_cards = 6;
+            } else {
+                $num_cards = 5;
+            }
+
+            $cards = $this->cards->pickCards( $num_cards, 'deck', $player_id );
+
+            // Notify player about his cards
+            $this->notifyPlayer( $player_id, 'newHand', '', ['cards' => $cards] );
+        }
+
+        // TODO: Deal cards to board locations
     }
     
     /**
@@ -358,5 +410,13 @@ class RedRisingSmiller extends Table
         }
 
         throw new feException("Zombie mode not supported at this game state: \"{$state_name}\".");
+    }
+
+    /************************************************************************
+     * General Utilities                                                    *
+     ************************************************************************/
+    
+    private function loadPlayers(): array {
+        return $this->getCollectionFromDb("SELECT player_id id, player_score score, player_no no, player_color color, player_house house FROM player");
     }
 }
