@@ -95,6 +95,7 @@
   ];
 
   // NOTE - if updating *colors*, make sure to update gameinfos.inc.php for player_colors as well!
+  // TODO: Check if 'name_key' is used, was added but never used intially 
   $this->houses = [
     MA_HOUSE_APOLLO => [
       'name_key' => 'apollo',
