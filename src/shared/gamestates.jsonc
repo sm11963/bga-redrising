@@ -28,15 +28,47 @@
 
 	// Note: ID=2: your first state
 	"2": {
-		"name": "dummmy",
-		"description": "${actplayer} must play a card or pass",
-		"descriptionmyturn": "${you} must play a card or pass",
+		"name": "playerTurn",
+		"description": "${actplayer} must lead or scout",
+		"descriptionmyturn": "${you} must lead or scout",
 		"type": "activeplayer",
 		"possibleactions": {
-			"playCard": [{ "name": "card_id", "type": "AT_int" }],
-			"pass": []
+			"actLead": [{ "name": "card_id", "type": "AT_int" }, {"name": "board_location_id", "type": "AT_int"}],
+			"actScout": []
 		},
-		"transitions": { "playCard": 2, "pass": 2 }
+		"transitions": { "tLead": 3, "tScout": 2 }
+	},
+
+	"3": {
+		"name": "playerLeadPick",
+		"description": "${actplayer} must pick up a card",
+		"descriptionmyturn": "${you} must pick up a card",
+		"type": "activeplayer",
+		"possibleactions": {
+			"actLeadPick": [{ "name": "card_id", "type": "AT_int" }]
+		},
+		"transitions": { "tLeadPick": 5 }
+	},
+
+	
+	"4": {
+		"name": "playerScoutPlace",
+		"description": "${actplayer} must place the scouted card",
+		"descriptionmyturn": "${you} must place the scouted card",
+		"type": "activeplayer",
+		"possibleactions": {
+			"actScoutPlace": [{ "name": "board_location_id", "type": "AT_int" }]
+		},
+		"transitions": { "tScoutPlace": 5 }
+	},
+
+	"5": {
+		"name": "nextPlayer",
+		"description": "",
+		"type": "game",
+		"action": "stNextPlayer",
+		"updateGameProgression": true,
+		"transitions": { "tEndGame": 99, "tNextPlayer": 2 }
 	},
 
 /*

@@ -18,7 +18,7 @@ declare(strict_types=1);
  */
 if (false) {
 	/** @var redrisingsmiller $game */
-	
+	$game->stNextPlayer();
 }
 
 $machinestates = array(
@@ -32,14 +32,45 @@ $machinestates = array(
 		),
 	),
 	2 => array(
-		'name' => 'dummmy',
-		'description' => clienttranslate('${actplayer} must play a card or pass'),
-		'descriptionmyturn' => clienttranslate('${you} must play a card or pass'),
+		'name' => 'playerTurn',
+		'description' => clienttranslate('${actplayer} must lead or scout'),
+		'descriptionmyturn' => clienttranslate('${you} must lead or scout'),
 		'type' => 'activeplayer',
-		'possibleactions' => ['playCard', 'pass'],
+		'possibleactions' => ['actLead', 'actScout'],
 		'transitions' => array(
-			'playCard' => 2,
-			'pass' => 2,
+			'tLead' => 3,
+			'tScout' => 2,
+		),
+	),
+	3 => array(
+		'name' => 'playerLeadPick',
+		'description' => clienttranslate('${actplayer} must pick up a card'),
+		'descriptionmyturn' => clienttranslate('${you} must pick up a card'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actLeadPick'],
+		'transitions' => array(
+			'tLeadPick' => 5,
+		),
+	),
+	4 => array(
+		'name' => 'playerScoutPlace',
+		'description' => clienttranslate('${actplayer} must place the scouted card'),
+		'descriptionmyturn' => clienttranslate('${you} must place the scouted card'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actScoutPlace'],
+		'transitions' => array(
+			'tScoutPlace' => 5,
+		),
+	),
+	5 => array(
+		'name' => 'nextPlayer',
+		'description' => '',
+		'type' => 'game',
+		'action' => 'stNextPlayer',
+		'updateGameProgression' => true,
+		'transitions' => array(
+			'tEndGame' => 99,
+			'tNextPlayer' => 2,
 		),
 	),
 	99 => array(

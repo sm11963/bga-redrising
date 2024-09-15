@@ -107,7 +107,7 @@ class RedRisingSmiller extends Gamegui
 		
 		switch( stateName )
 		{
-		case 'dummmy':
+		case 'playerTurn':
 			break;
 		}
 	}
@@ -119,7 +119,7 @@ class RedRisingSmiller extends Gamegui
 		
 		switch( stateName )
 		{
-		case 'dummmy':
+		case 'playerTurn':
 			break;
 		}
 	}
@@ -134,8 +134,9 @@ class RedRisingSmiller extends Gamegui
 
 		switch( stateName )
 		{
-		case 'dummmy':
-			// Add buttons if needed
+		case 'playerTurn':
+			this.addActionButton('player_act_lead_button', _('Lead'), 'onActLeadSelected');
+			this.addActionButton('player_act_scout_button', _('Scout'), 'onActScoutSelected');
 			break;
 		}
 	}
@@ -185,6 +186,27 @@ class RedRisingSmiller extends Gamegui
 		- check the action is possible at this game state.
 		- make a call to the game server
 	*/
+
+	onActLeadSelected(): void {
+		console.log('lead selected');
+
+		const selectedItems = this.playerHand.getSelectedItems();
+		if (selectedItems.length != 1) {
+			this.showMessage(_("Lead action requires a single card selected in your hand to place on the board."), 'error');
+			return
+		}
+
+		// @ts-ignore
+		this.bgaPerformAction('actLead', {
+			card_id: selectedItems[0]!.id,
+			board_location_id: 0
+		});
+		
+	}
+
+	onActScoutSelected(): void {
+		console.log('scout selected');
+	}
 	
 	/*
 	Example:

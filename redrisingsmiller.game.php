@@ -23,7 +23,7 @@ require_once ('modules/php/tokens.php');
 class RedRisingSmiller extends Table
 {
     // Provided in material.inc.php
-    protected $ma_houses, $ma_card_types, $ma_board_locations, $ma_token_types, $ma_colors;
+    protected $ma_houses, $ma_board_locations, $ma_token_types, $ma_colors;
 
     // Provided in .game.php
     private $tokens;   
@@ -64,28 +64,35 @@ class RedRisingSmiller extends Table
      * @throws BgaSystemException
      * @see action_redrisingsmiller::actMyAction
      */
-    public function actPlayCard(int $card_id): void
+    public function actLead(int $card_id, int $board_location_id): void
     {
         // Retrieve the active player ID.
         $player_id = (int)$this->getActivePlayerId();
 
-        // Add your game logic to play a card here.
-        $card_name = $this->ma_card_types[$card_id]['card_name'];
+        $this->debug("Player {$player_id} would like to lead card {$card_id} to location {$board_location_id}!");
 
-        // Notify all players about the card played.
-        $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} plays ${card_name}'), [
-            "player_id" => $player_id,
-            "player_name" => $this->getActivePlayerName(),
-            "card_name" => $card_name,
-            "card_id" => $card_id,
-            "i18n" => ['card_name'],
-        ]);
+        $card = $this->cards->getCard( $card_id );
+
+        if ($card['location'] != 'hand' || $card['location_arg'] != $player_id) {
+            throw new BgaUserException(_("The selected card must be in your hand!"));
+        }
+
+        $this->cards->insertCardOnExtremePosition( $card_id, "board_location_{$board_location_id}", true);
+
+        // // Notify all players about the card played.
+        // $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} plays ${card_name}'), [
+        //     "player_id" => $player_id,
+        //     "player_name" => $this->getActivePlayerName(),
+        //     "card_name" => $card_name,
+        //     "card_id" => $card_id,
+        //     "i18n" => ['card_name'],
+        // ]);
 
         // at the end of the action, move to the next state
-        $this->gamestate->nextState("playCard");
+        //$this->gamestate->nextState("tLead");
     }
 
-    public function actPass(): void
+    public function actScout(): void
     {
         // Retrieve the active player ID.
         $player_id = (int)$this->getActivePlayerId();
@@ -98,6 +105,14 @@ class RedRisingSmiller extends Table
 
         // at the end of the action, move to the next state
         $this->gamestate->nextState("pass");
+    }
+
+    public function actLeadPick(int $card_id): void {
+
+    }
+
+    public function actScoutPlace(int $board_location_id): void {
+
     }
 
     /**
@@ -150,7 +165,7 @@ class RedRisingSmiller extends Table
 
         // Go to another gamestate
         // Here, we would detect if the game is over, and in this case use "endGame" transition instead 
-        $this->gamestate->nextState("nextPlayer");
+        $this->gamestate->nextState("tNextPlayer");
     }
 
     /**

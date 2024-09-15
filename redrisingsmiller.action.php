@@ -27,22 +27,46 @@ class action_redrisingsmiller extends APP_GameAction
 		}
 	}
 
-	public function playCard()
+	public function actLead()
+	{
+		self::setAjaxMode();
+
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+		/** @var int $board_location_id */
+		$board_location_id = self::getArg('board_location_id', AT_int, true);
+
+		$this->game->actLead( $card_id, $board_location_id );
+		self::ajaxResponse();
+	}
+
+	public function actScout()
+	{
+		self::setAjaxMode();
+
+		$this->game->actScout(  );
+		self::ajaxResponse();
+	}
+
+	public function actLeadPick()
 	{
 		self::setAjaxMode();
 
 		/** @var int $card_id */
 		$card_id = self::getArg('card_id', AT_int, true);
 
-		$this->game->playCard( $card_id );
+		$this->game->actLeadPick( $card_id );
 		self::ajaxResponse();
 	}
 
-	public function pass()
+	public function actScoutPlace()
 	{
 		self::setAjaxMode();
 
-		$this->game->pass(  );
+		/** @var int $board_location_id */
+		$board_location_id = self::getArg('board_location_id', AT_int, true);
+
+		$this->game->actScoutPlace( $board_location_id );
 		self::ajaxResponse();
 	}
 }

@@ -68,14 +68,14 @@ define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "e
         RedRisingSmiller.prototype.onEnteringState = function (stateName, args) {
             console.log('Entering state: ' + stateName);
             switch (stateName) {
-                case 'dummmy':
+                case 'playerTurn':
                     break;
             }
         };
         RedRisingSmiller.prototype.onLeavingState = function (stateName) {
             console.log('Leaving state: ' + stateName);
             switch (stateName) {
-                case 'dummmy':
+                case 'playerTurn':
                     break;
             }
         };
@@ -84,7 +84,9 @@ define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "e
             if (!this.isCurrentPlayerActive())
                 return;
             switch (stateName) {
-                case 'dummmy':
+                case 'playerTurn':
+                    this.addActionButton('player_act_lead_button', _('Lead'), 'onActLeadSelected');
+                    this.addActionButton('player_act_scout_button', _('Scout'), 'onActScoutSelected');
                     break;
             }
         };
@@ -104,6 +106,21 @@ define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "e
             }
             stock.onItemCreate = dojo.hitch(this, 'onStockItemCreate');
             return stock;
+        };
+        RedRisingSmiller.prototype.onActLeadSelected = function () {
+            console.log('lead selected');
+            var selectedItems = this.playerHand.getSelectedItems();
+            if (selectedItems.length != 1) {
+                this.showMessage(_("Lead action requires a single card selected in your hand to place on the board."), 'error');
+                return;
+            }
+            this.bgaPerformAction('actLead', {
+                card_id: selectedItems[0].id,
+                board_location_id: 0
+            });
+        };
+        RedRisingSmiller.prototype.onActScoutSelected = function () {
+            console.log('scout selected');
         };
         RedRisingSmiller.prototype.setupNotifications = function () {
             console.log('notifications subscriptions setup');
