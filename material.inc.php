@@ -20,7 +20,7 @@
  */
 require_once('modules/php/constants.inc.php');
   
-$this->colors = [
+$this->ma_colors = [
   MA_CARD_COLOR_RED => [
     'name' => clienttranslate('red'),
   ],
@@ -67,7 +67,7 @@ $this->colors = [
 
 // NOTE - if updating *colors*, make sure to update gameinfos.inc.php for player_colors as well!
 // TODO: Check if 'name_key' is used, was added but never used intially 
-$this->houses = [
+$this->ma_houses = [
   MA_HOUSE_APOLLO => [
     'name_key' => 'apollo',
     'name' => clienttranslate('apollo'),
@@ -100,7 +100,7 @@ $this->houses = [
   ],
 ];
 
-$this->board_locations = [
+$this->ma_board_locations = [
   MA_BOARD_LOCATION_JUPITER => [
     'name_key' => 'jupiter',
     'name' => clienttranslate('JUPITER'),
@@ -130,7 +130,7 @@ $this->board_locations = [
  *    - tracker: Simple counter per player, starts at 0, may have a 'max' value.
  *    - token: Game piece to be assigned to a location (player or limbo)
  */
-$this->token_types = [
+$this->ma_token_types = [
   'helium' => [
     'type' => 'tracker',
     'max' => null,

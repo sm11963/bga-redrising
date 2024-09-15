@@ -22,6 +22,10 @@ require_once ('modules/php/tokens.php');
 
 class RedRisingSmiller extends Table
 {
+    // Provided in material.inc.php
+    protected $ma_houses, $ma_card_types, $ma_board_locations, $ma_token_types, $ma_colors;
+
+    // Provided in .game.php
     private $tokens;   
     private $cards;
 
@@ -66,7 +70,7 @@ class RedRisingSmiller extends Table
         $player_id = (int)$this->getActivePlayerId();
 
         // Add your game logic to play a card here.
-        $card_name = $this->card_types[$card_id]['card_name'];
+        $card_name = $this->ma_card_types[$card_id]['card_name'];
 
         // Notify all players about the card played.
         $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} plays ${card_name}'), [
@@ -196,12 +200,12 @@ class RedRisingSmiller extends Table
 
         $result['players'] = $this->loadPlayers();
         $result['player_hand_nbrs'] = $this->cards->countCardsByLocationArgs( 'hand' );
-        $result['ma_houses'] = $this->houses;
-        $result['ma_board_locations'] = $this->board_locations;
+        $result['ma_houses'] = $this->ma_houses;
+        $result['ma_board_locations'] = $this->ma_board_locations;
         $result['tokens'] = $this->tokens->getAllTokensInfo();
         $result['hand'] = $this->cards->getCardsInLocation( 'hand', $current_player_id );
         $result['board_locations'] = [];
-        foreach ($this->board_locations as $location_id => $location_info) {
+        foreach ($this->ma_board_locations as $location_id => $location_info) {
             $result['board_locations'][$location_id] = [
                 'cards' => $this->cards->getCardsInLocation( "board_location_$location_id", null, 'location_arg' )
             ];
@@ -259,7 +263,7 @@ class RedRisingSmiller extends Table
         $players = $this->loadPlayersBasicInfos();
 
         $tokens = array ();
-        foreach ( $this->token_types as $token_type => $token_info ) {
+        foreach ( $this->ma_token_types as $token_type => $token_info ) {
             if ($token_info['type'] == 'tracker') {
                 foreach ( array_keys($players) as $player_id ) {
                     $tokens [] = [
@@ -282,7 +286,7 @@ class RedRisingSmiller extends Table
     public function debug_inc_tracker($type, $player_id) {
         $token_key = "{$type}_{$player_id}";
         $value = $this->tokens->getTokenState($token_key);
-        $max_value = $this->token_types[$type]['max'];
+        $max_value = $this->ma_token_types[$type]['max'];
         if (is_null($max_value) || $value < $max_value) {
             $this->tokens->setTokenState($token_key, $value+1);
         }
@@ -329,7 +333,7 @@ class RedRisingSmiller extends Table
             $this->notifyPlayer( $player_id, 'newHand', '', ['cards' => $cards] );
         }
 
-        foreach ( array_keys($this->board_locations) as $location_id) {
+        foreach ( array_keys($this->ma_board_locations) as $location_id) {
             $cards = [];
             for ($i = 0; $i < 2; $i++) {
                 $cards [] = $this->cards->pickCardForLocation( 'deck', "board_location_$location_id", $i);
@@ -344,7 +348,7 @@ class RedRisingSmiller extends Table
      */
     private function initPlayers($players): array {
         // Randomly order Houses, then pick a house for each player, this determines color and potentially the first player (Apollo).
-        $available_houses = array_keys($this->houses);
+        $available_houses = array_keys($this->ma_houses);
         shuffle($available_houses);
 
         foreach ($players as $player_id => $player) {
@@ -353,7 +357,7 @@ class RedRisingSmiller extends Table
             // Now you can access both $player_id and $player array
             $query_values[] = vsprintf("('%s', '%s', '%s', '%s', '%s', '%s')", [
                 $player_id,
-                $this->houses[$house]['color'],
+                $this->ma_houses[$house]['color'],
                 $player["player_canal"],
                 addslashes($player["player_name"]),
                 addslashes($player["player_avatar"]),
