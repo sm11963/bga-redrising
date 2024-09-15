@@ -11,6 +11,13 @@
 // If you have any imports/exports in this file, 'declare global' is access/merge your game specific types with framework types. 'export {};' is used to avoid possible confusion with imports/exports.
 declare global {
 
+	interface Card {
+		id: string;
+		type: string;
+		location: string;
+		location_arg: string;
+	}
+
 	/** @gameSpecific Add game specific notifications / arguments here. See {@link NotifTypes} for more information. */
 	interface NotifTypes {
 		// [name: string]: any; // Uncomment to remove type safety on notification names and arguments
@@ -19,6 +26,15 @@ declare global {
 	/** @gameSpecific Add game specific gamedatas arguments here. See {@link Gamedatas} for more information. */
 	interface Gamedatas {
 		// [key: string | number]: Record<keyof any, any>; // Uncomment to remove type safety on game state arguments
+		player_hand_nbrs:  { [key: string]: number };
+		ma_board_locations: { [key: string]: { [key: string]: any }};
+		tokens: { [key: string]: { [key: string]: number } };
+		board_locations: { [key: string]: 
+			{
+				cards: Card[]
+			}
+		};
+		hand: Card[];
 	}
 
 	//
