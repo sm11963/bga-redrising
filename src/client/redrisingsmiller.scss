@@ -23,20 +23,66 @@
 	3°) ... anything else: It is really easy to add and remove CSS classes dynamically from your Javascript with dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why, very often, using CSS classes for the logic of your user interface allow you to do complex thing easily.
 */
 
-/*
-	Example of CSS sprites (a black token and a white token, 20x20px each, embedded in the same "tokens.png" 40x20px image):
+#gameboard {
+    position: relative;
+    width: 164px;
+    height: 480px;
+    display: flex;
+}
 
-	.white_token {
-		background-image: url('img/tokens.png');
-		background-position: 0px 0px;
-	}
-	.black_token {
-		background-image: url('img/tokens.png');
-		background-position: -20px 0px;
-	}
-	.token {
-		width: 20px;
-		height: 20px;
-		background-repeat: none;
-	}
-*/
+.locationname {
+    font-weight: bold;
+    color: blue;
+    text-align: center;
+}
+
+.locationcards {
+    display: inline-block;
+    position: relative;
+    margin-top: 5px;
+    width: 144px;
+    height: 192px;
+    background-color: #FFFFFF;
+}
+
+.cardontable {
+    position: absolute;
+    width: 144px;
+    height: 196px;
+    background-color: #FFFFFF;
+}
+
+.rr_player_board {
+    margin-left: 5px;
+    margin-top: 5px;
+}
+
+.rr_player_board imgtext {
+    margin-right: 3px;
+}
+
+.rr_player_board span {
+    margin-right: 5px;
+}
+
+.pbtrackericon {
+    width: 20px;
+    height: 21px;
+    display: inline-block;
+}
+
+.heliumicon {
+    background-color: red;
+}
+
+.influenceicon {
+    background-color: green;
+}
+
+.fleeticon {
+    background-color: blue;
+}
+
+.locationcards .stockitem {
+    margin: 5px;
+}
