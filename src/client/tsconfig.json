@@ -11,6 +11,7 @@
 	"files": [
 		"redrisingsmiller.ts",
 		"redrisingsmiller.d.ts",
+		"../../node_modules/bga-ts-template/typescript/cookbook/common.ts",
 		// Add Cookbook files here: ../../node_modules/bga-ts-template/typescript/cookbook/<module>.ts
 		// "../../node_modules/bga-ts-template/typescript/cookbook/common.ts",
 	],

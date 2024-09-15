@@ -66,11 +66,12 @@ class RedRisingSmiller extends Table
      */
     public function actLead(int $card_id, int $board_location_id): void
     {
+        $this->checkAction('actLead');
+
         // Retrieve the active player ID.
         $player_id = (int)$this->getActivePlayerId();
 
-        $this->debug("Player {$player_id} would like to lead card {$card_id} to location {$board_location_id}!");
-
+        // TODO: Validate card_id is valid.
         $card = $this->cards->getCard( $card_id );
 
         if ($card['location'] != 'hand' || $card['location_arg'] != $player_id) {
@@ -79,21 +80,22 @@ class RedRisingSmiller extends Table
 
         $this->cards->insertCardOnExtremePosition( $card_id, "board_location_{$board_location_id}", true);
 
-        // // Notify all players about the card played.
-        // $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} plays ${card_name}'), [
-        //     "player_id" => $player_id,
-        //     "player_name" => $this->getActivePlayerName(),
-        //     "card_name" => $card_name,
-        //     "card_id" => $card_id,
-        //     "i18n" => ['card_name'],
-        // ]);
+        // Notify all players about the card played.
+        $this->notifyAllPlayers("cardDeployed", clienttranslate('${player_name} deploys ${card_id} to ${to_location}'), [
+            "player_id" => $player_id,
+            "player_name" => $this->getActivePlayerName(),
+            "card_id" => $card_id,
+            "card_type" => $card['type'],
+            "to_location" => $board_location_id,
+        ]);
 
-        // at the end of the action, move to the next state
-        //$this->gamestate->nextState("tLead");
+        $this->gamestate->nextState("tLead");
     }
 
     public function actScout(): void
     {
+        $this->checkAction('actScout');
+
         // Retrieve the active player ID.
         $player_id = (int)$this->getActivePlayerId();
 
@@ -108,7 +110,34 @@ class RedRisingSmiller extends Table
     }
 
     public function actLeadPick(int $card_id): void {
+        $this->checkAction('actLeadPick');
+        // Retrieve the active player ID.
+        $player_id = (int)$this->getActivePlayerId();
 
+        // TODO: Validate card_id is valid.
+        $card = $this->cards->getCard( $card_id );
+
+        if (!str_starts_with($card['location'], 'board_location_')) {
+            throw new BgaUserException(_("The selected card must be currently on top of a location on the board!"));
+        }
+
+        $locationTopCard = $this->cards->getCardOnTop( $card['location'] );
+
+        if ($card_id != $locationTopCard['id']) {
+            throw new BgaUserException(_("The selected card must be currently on top of a location on the board!"));
+        }
+
+        $this->cards->moveCard( $card_id, 'hand', $player_id );
+
+        // Notify all players about the card played.
+        $this->notifyAllPlayers("cardPicked", clienttranslate('${player_name} picks up ${card_id} from location ${prev_location}'), [
+            "player_id" => $player_id,
+            "player_name" => $this->getActivePlayerName(),
+            "card_id" => $card_id,
+            "prev_location" => (int) substr($card['location'], strlen('board_location_')),
+        ]);
+
+        $this->gamestate->nextState("tLeadPick");
     }
 
     public function actScoutPlace(int $board_location_id): void {

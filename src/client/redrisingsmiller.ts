@@ -10,11 +10,13 @@
 /// <amd-module name="bgagame/redrisingsmiller"/>
 
 import Gamegui = require('ebg/core/gamegui');
-import "ebg/counter";
 import Stock = require('ebg/stock');
+import CommonMixer = require("cookbook/common");
+
+import "ebg/counter";
 
 /** The root for all of your game code. */
-class RedRisingSmiller extends Gamegui
+class RedRisingSmiller extends CommonMixer(Gamegui)
 {
 	// myGlobalValue: number = 0;
 	// myGlobalArray: string[] = [];
@@ -109,6 +111,12 @@ class RedRisingSmiller extends Gamegui
 		{
 		case 'playerTurn':
 			break;
+		case 'playerLeadPick':
+			Object.entries(this.boardLocationStocks).forEach(
+				([k, stock]) => {
+					stock.unselectAll();
+				}
+			);
 		}
 	}
 
@@ -135,7 +143,11 @@ class RedRisingSmiller extends Gamegui
 		switch( stateName )
 		{
 		case 'playerTurn':
-			this.addActionButton('player_act_lead_button', _('Lead'), 'onActLeadSelected');
+			// TODO: Use constants for board location ids
+			this.addActionButton('player_act_deploy_jupiter_button', _('Deploy to Jupiter'), () => this.onActLeadSelected(0));
+			this.addActionButton('player_act_deploy_mars_button', _('Deploy to Mars'), () => this.onActLeadSelected(1));
+			this.addActionButton('player_act_deploy_luna_button', _('Deploy to Luna'), () => this.onActLeadSelected(2));
+			this.addActionButton('player_act_deploy_institute_button', _('Deploy to The Institute'), () => this.onActLeadSelected(3));
 			this.addActionButton('player_act_scout_button', _('Scout'), 'onActScoutSelected');
 			break;
 		}
@@ -160,12 +172,52 @@ class RedRisingSmiller extends Gamegui
 		dojo.place(`<span class="card_title_type">${card_id} [${card_type_id}]</span>`, card_div.id);
 	}
 
+	onStockItemSelected( control_name: string, item_id: string ): void 
+	{
+		console.log(`Stock ${control_name} selected ${item_id}`);
+		const card_id = toint(item_id)!;
+
+		if (this.gamedatas.gamestate.name == 'playerLeadPick') {
+			// check a card is the top card of a stock
+
+			const stock = Object.entries(this.boardLocationStocks).find(
+				([k, stock]) => stock.control_name == control_name
+			)?.[1];
+			if (stock === undefined) {
+				// TODO: Add actual data in this log - confirm how translation works.
+				// TODO: Also restrict selection in the hand, this will trigger this as well right now.
+				console.warn(_(`Something went wrong and a card location was not found.`));
+				return ;
+			}
+
+			if (!stock.isSelected(card_id)) {
+				// This shouldn't happen, but only trigger when we are actually selecting the card.
+				return;
+			}
+
+			const locationTopItem = stock.getAllItems().pop();
+			if (locationTopItem === undefined || locationTopItem.id != card_id) {
+				this.showMessage(_("You can only pickup the top card from a location! Please select a top card."),"error");
+				return;
+			}
+
+			// @ts-ignore
+			this.bgaPerformAction("actLeadPick", {
+				card_id: card_id
+			});
+
+			// on notification handle, remove that card from the stock AND then readjust weights appropriately (or maybe just do this when adding to the stock?)
+		}
+	}
+
 	createStock( container_div_id: string ): Stock
 	{
 		var stock = new Stock();
 		stock.create( this, $(container_div_id), 134, 182);
 		//stock.backgroundSize = '134px 182px';
 		stock.resizeItems(134, 182, 134, 182);
+		stock.setSelectionMode(1);
+		dojo.connect ( stock, 'onChangeSelection', this, 'onStockItemSelected' );
 
 		for (var i=0; i<112; i++) {
 			stock.addItemType( i, i, g_gamethemeurl+'img/mock_card.jpg', 0);
@@ -187,21 +239,18 @@ class RedRisingSmiller extends Gamegui
 		- make a call to the game server
 	*/
 
-	onActLeadSelected(): void {
-		console.log('lead selected');
-
+	// TODO: board_location_id can be it's own type for type safety
+	onActLeadSelected( board_location_id: number ): void {
 		const selectedItems = this.playerHand.getSelectedItems();
-		if (selectedItems.length != 1) {
-			this.showMessage(_("Lead action requires a single card selected in your hand to place on the board."), 'error');
-			return
+		if (selectedItems.length == 1 && selectedItems[0] !== undefined) {
+			// @ts-ignore
+			this.bgaPerformAction("actLead", {
+				card_id: selectedItems[0].id,
+				board_location_id: board_location_id,
+			});
+		} else {
+			this.showMessage(_("Lead action requires a single card selected in your hand to place on the board."),"error");
 		}
-
-		// @ts-ignore
-		this.bgaPerformAction('actLead', {
-			card_id: selectedItems[0]!.id,
-			board_location_id: 0
-		});
-		
 	}
 
 	onActScoutSelected(): void {
@@ -257,6 +306,51 @@ class RedRisingSmiller extends Gamegui
 
 		// With GameguiCookbook::Common class...
 		// this.subscribeNotif( 'cardPlayed', this.notif_cardPlayed ); // Adds type safety to the subscription
+		this.subscribeNotif('cardDeployed', this.notif_cardDeployed);
+		this.subscribeNotif('cardPicked', this.notif_cardPicked);
+	}
+
+	notif_cardDeployed( notif: NotifAs<'cardDeployed'> ) {
+		const cardId = notif.args.card_id;
+		const cardType = notif.args.card_type;
+		const toStock = this.boardLocationStocks[notif.args.to_location];
+		if (toStock === undefined) {
+			console.warn(`Could not find location ${notif.args.to_location} for deployed card!`);
+			return;
+		}
+
+		// MAYBE: Make this a function, when adding a new card on top, the weight should just equal the number of cards
+		toStock.changeItemsWeight({
+			[cardType]: toStock.count(),
+		});
+
+		if (notif.args.player_id == this.player_id) {
+			toStock.addToStockWithId(cardType, cardId, this.playerHand.getItemDivId(cardId.toString()));
+			this.playerHand.removeFromStockById(cardId);
+		} else {
+			toStock.addToStockWithId(cardType, cardId, `player_board_${notif.args.player_id}`);
+		}
+	}
+
+	notif_cardPicked( notif: NotifAs<'cardPicked'>) {
+		const fromStock = this.boardLocationStocks[notif.args.prev_location];
+		if (fromStock === undefined) {
+			console.warn(`Could not find location ${notif.args.prev_location} for picked card!`);
+			return;
+		}
+		const card = fromStock.getItemById(notif.args.card_id);
+
+		if (notif.args.player_id == this.player_id) {
+			this.playerHand.addToStockWithId(card.type, card.id, fromStock.getItemDivId(card.id.toString()));
+			fromStock.removeFromStockById(card.id);
+		} else {
+			fromStock.removeFromStockById(card.id, `player_board_${notif.args.player_id}`);
+		}
+
+		// MAYBE: Make this a function, when removing a card from a weighted location, reset to default weight (-1)
+		fromStock.changeItemsWeight({
+			[card.type]: -1,
+		});
 	}
 
 	/*
