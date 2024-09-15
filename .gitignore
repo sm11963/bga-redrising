@@ -2,7 +2,7 @@
 .DS_Store
 
 # Built files
-client/build/
+**/client/build/
 template/build.js
 
 # Node.js
