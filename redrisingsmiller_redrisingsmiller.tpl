@@ -48,6 +48,13 @@
         </div>
     </div>
 
+    <div class="whiteblock thedeck">
+        <div class="locationname" style="color:#000000">
+            THE DECK
+        </div>
+        <div id="thedeckcard" class="stockitem"></div>
+    </div>
+
     <div class="whiteblock boardlocation location_luna">
         <div class="locationname" style="color:#FFFF00">
             LUNA

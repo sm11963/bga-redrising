@@ -98,9 +98,14 @@ class RedRisingSmiller extends CommonMixer(Gamegui)
 			this.playerHand.addToStockWithId(toint(card.type)!, toint(card.id)!);
 		}
 
+		dojo.setStyle("thedeckcard", {
+			'backgroundImage': `url("${g_gamethemeurl}/img/mock_card.jpg")`,
+			'backgroundSize': '134px 182px',
+			'width': '134px',
+			'height': '182px',
+		});
 		
-		// TODO: Set up your game interface here, according to "gamedatas"
-		
+		// TODO: Set up your game interface here, according to "gamedatas"		
 
 		// Setup game notifications to handle (see "setupNotifications" method below)
 		this.setupNotifications();

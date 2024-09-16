@@ -251,6 +251,12 @@ define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "e
                 var card = gamedatas.hand[i];
                 this.playerHand.addToStockWithId(toint(card.type), toint(card.id));
             }
+            dojo.setStyle("thedeckcard", {
+                'backgroundImage': "url(\"".concat(g_gamethemeurl, "/img/mock_card.jpg\")"),
+                'backgroundSize': '134px 182px',
+                'width': '134px',
+                'height': '182px',
+            });
             this.setupNotifications();
             console.log("Ending game setup");
         };

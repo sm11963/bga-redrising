@@ -45,6 +45,12 @@
     background-color: #FFFFFF;
 }
 
+#thedeckcard {
+    display: inline-block;
+    position: relative;
+    margin-top: 5px;
+}
+
 .cardontable {
     position: absolute;
     width: 144px;
