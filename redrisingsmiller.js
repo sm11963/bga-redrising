@@ -194,7 +194,7 @@ define("cookbook/common", ["require", "exports", "dojo"], function (require, exp
     }(Base)); };
     return CommonMixin;
 });
-define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "ebg/stock", "cookbook/common", "ebg/counter"], function (require, exports, Gamegui, Stock, CommonMixer) {
+define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "ebg/stock", "cookbook/common", "ebg/counter"], function (require, exports, Gamegui, Stock, CommonMixer, Counter) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RedRisingSmiller = (function (_super) {
@@ -202,6 +202,7 @@ define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "e
         function RedRisingSmiller() {
             var _this = _super.call(this) || this;
             _this.boardLocationStocks = {};
+            _this.playerBoardCounters = {};
             console.log('redrisingsmiller constructor');
             _this.playerHand = _this.createStock('myhand');
             return _this;
@@ -213,10 +214,17 @@ define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "e
                 var player = gamedatas.players[player_id];
                 var hand_count = gamedatas.player_hand_nbrs[player_id];
                 var player_board_div = $('player_board_' + player_id);
-                var div = "<div class=\"rr_player_board\">\n\t\t\t\t<img src=\"https://x.boardgamearena.net/data/themereleases/220106-1001/img/common/hand.png\" class=\"imgtext cardhandcount\">\n\t\t\t\t<span id=\"card_hand_nbr_".concat(player_id, "\" class=\"cardhandcount\">").concat(hand_count, "</span>\n\t\t\t\t<div class=\"imgtext pbtrackericon heliumicon\"></div>\n\t\t\t\t<span id=\"helium_tracker_").concat(player_id, "\">").concat(this.getTrackerCount(gamedatas.tokens, 'helium', player_id), "</span>\n\t\t\t\t<div class=\"imgtext pbtrackericon influenceicon\"></div>\n\t\t\t\t<span id=\"influence_tracker_").concat(player_id, "\">").concat(this.getTrackerCount(gamedatas.tokens, 'influence', player_id), "</span>\n\t\t\t\t<div class=\"imgtext pbtrackericon fleeticon\"></div>\n\t\t\t\t<span id=\"fleet_tracker_").concat(player_id, "\">").concat(this.getTrackerCount(gamedatas.tokens, 'fleet_progress', player_id), "</span>\n\t\t\t</div>");
+                var div = "<div class=\"rr_player_board\">\n\t\t\t\t<img src=\"https://x.boardgamearena.net/data/themereleases/220106-1001/img/common/hand.png\" class=\"imgtext cardhandcount\">\n\t\t\t\t<span id=\"card_hand_nbr_".concat(player_id, "\" class=\"cardhandcount\"></span>\n\t\t\t\t<div class=\"imgtext pbtrackericon heliumicon\"></div>\n\t\t\t\t<span id=\"helium_tracker_").concat(player_id, "\"></span>\n\t\t\t\t<div class=\"imgtext pbtrackericon influenceicon\"></div>\n\t\t\t\t<span id=\"influence_tracker_").concat(player_id, "\"></span>\n\t\t\t\t<div class=\"imgtext pbtrackericon fleeticon\"></div>\n\t\t\t\t<span id=\"fleet_tracker_").concat(player_id, "\"></span>\n\t\t\t</div>");
                 if (player_board_div !== null) {
                     dojo.place(div, player_board_div);
                 }
+                this.playerBoardCounters[player_id] = {
+                    card_hand_nbr: this.createCounter("card_hand_nbr_".concat(player_id), hand_count),
+                    helium: this.createCounter("helium_tracker_".concat(player_id), this.getTrackerCount(gamedatas.tokens, 'helium', player_id)),
+                    influence: this.createCounter("influence_tracker_".concat(player_id), this.getTrackerCount(gamedatas.tokens, 'influence', player_id)),
+                    fleet_progress: this.createCounter("fleet_tracker_".concat(player_id), this.getTrackerCount(gamedatas.tokens, 'fleet_progress', player_id)),
+                };
+                this.playerBoardCounters[player_id];
             }
             for (var location_id in gamedatas.ma_board_locations) {
                 var location_info = gamedatas.ma_board_locations[location_id];
@@ -283,6 +291,13 @@ define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "e
         RedRisingSmiller.prototype.getTrackerCount = function (tokens, tracker_type, player_id) {
             var token_info = tokens["".concat(tracker_type, "_").concat(player_id)];
             return token_info['state'];
+        };
+        RedRisingSmiller.prototype.createCounter = function (target, value) {
+            if (value === void 0) { value = 0; }
+            var counter = new Counter();
+            counter.create(target);
+            counter.setValue(value);
+            return counter;
         };
         RedRisingSmiller.prototype.onStockItemCreate = function (card_div, card_type_id, card_id) {
             dojo.place("<span class=\"card_title_type\">".concat(card_id, " [").concat(card_type_id, "]</span>"), card_div.id);
@@ -356,6 +371,7 @@ define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "e
         };
         RedRisingSmiller.prototype.notif_cardDeployed = function (notif) {
             var _a;
+            var _b;
             var cardId = notif.args.card_id;
             var cardType = notif.args.card_type;
             var toStock = this.boardLocationStocks[notif.args.to_location];
@@ -373,9 +389,11 @@ define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "e
             else {
                 toStock.addToStockWithId(cardType, cardId, "player_board_".concat(notif.args.player_id));
             }
+            (_b = this.playerBoardCounters[notif.args.player_id]) === null || _b === void 0 ? void 0 : _b.card_hand_nbr.incValue(-1);
         };
         RedRisingSmiller.prototype.notif_cardPicked = function (notif) {
             var _a;
+            var _b;
             var fromStock = this.boardLocationStocks[notif.args.prev_location];
             if (fromStock === undefined) {
                 console.warn("Could not find location ".concat(notif.args.prev_location, " for picked card!"));
@@ -389,6 +407,7 @@ define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "e
             else {
                 fromStock.removeFromStockById(card.id, "player_board_".concat(notif.args.player_id));
             }
+            (_b = this.playerBoardCounters[notif.args.player_id]) === null || _b === void 0 ? void 0 : _b.card_hand_nbr.incValue(1);
             fromStock.changeItemsWeight((_a = {},
                 _a[card.type] = -1,
                 _a));

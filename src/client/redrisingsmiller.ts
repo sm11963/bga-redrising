@@ -12,8 +12,7 @@
 import Gamegui = require('ebg/core/gamegui');
 import Stock = require('ebg/stock');
 import CommonMixer = require("cookbook/common");
-
-import "ebg/counter";
+import Counter = require("ebg/counter");
 
 /** The root for all of your game code. */
 class RedRisingSmiller extends CommonMixer(Gamegui)
@@ -22,6 +21,7 @@ class RedRisingSmiller extends CommonMixer(Gamegui)
 	// myGlobalArray: string[] = [];
 	playerHand: Stock;
 	boardLocationStocks: { [key: string]: Stock } = {};
+	playerBoardCounters: { [key: string]: { [key in 'card_hand_nbr' | 'helium' | 'influence' | 'fleet_progress']: Counter } } = {};
 
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
@@ -36,25 +36,34 @@ class RedRisingSmiller extends CommonMixer(Gamegui)
 		console.log( "Starting game setup" );
 		            
 		// Setting up player boards
-		for( var player_id in gamedatas.players )
+		for( const player_id in gamedatas.players )
 		{
-			var player = gamedatas.players[player_id];
-			var hand_count = gamedatas.player_hand_nbrs[player_id];
+			const player = gamedatas.players[player_id];
+			const hand_count = gamedatas.player_hand_nbrs[player_id];
 						
-			var player_board_div = $('player_board_'+player_id);
-			var div = `<div class="rr_player_board">
+			const player_board_div = $('player_board_'+player_id);
+			const div = `<div class="rr_player_board">
 				<img src="https://x.boardgamearena.net/data/themereleases/220106-1001/img/common/hand.png" class="imgtext cardhandcount">
-				<span id="card_hand_nbr_${player_id}" class="cardhandcount">${hand_count}</span>
+				<span id="card_hand_nbr_${player_id}" class="cardhandcount"></span>
 				<div class="imgtext pbtrackericon heliumicon"></div>
-				<span id="helium_tracker_${player_id}">${this.getTrackerCount(gamedatas.tokens, 'helium', player_id)}</span>
+				<span id="helium_tracker_${player_id}"></span>
 				<div class="imgtext pbtrackericon influenceicon"></div>
-				<span id="influence_tracker_${player_id}">${this.getTrackerCount(gamedatas.tokens, 'influence', player_id)}</span>
+				<span id="influence_tracker_${player_id}"></span>
 				<div class="imgtext pbtrackericon fleeticon"></div>
-				<span id="fleet_tracker_${player_id}">${this.getTrackerCount(gamedatas.tokens, 'fleet_progress', player_id)}</span>
+				<span id="fleet_tracker_${player_id}"></span>
 			</div>`
 			if (player_board_div !== null) {
 				dojo.place(div, player_board_div);
 			}
+
+			this.playerBoardCounters[player_id] = {
+				card_hand_nbr: this.createCounter(`card_hand_nbr_${player_id}`, hand_count),
+				helium: this.createCounter(`helium_tracker_${player_id}`, this.getTrackerCount(gamedatas.tokens, 'helium', player_id)),
+				influence: this.createCounter(`influence_tracker_${player_id}`, this.getTrackerCount(gamedatas.tokens, 'influence', player_id)),
+				fleet_progress: this.createCounter(`fleet_tracker_${player_id}`, this.getTrackerCount(gamedatas.tokens, 'fleet_progress', player_id)),
+			};
+
+			this.playerBoardCounters[player_id]
 		}
 
 		for (var location_id in gamedatas.ma_board_locations) {
@@ -161,10 +170,18 @@ class RedRisingSmiller extends CommonMixer(Gamegui)
 		script.
 	*/
 
-	getTrackerCount(tokens: { [key: string]: { [key: string]: number } }, tracker_type: string, player_id: string ): number | undefined
+	private getTrackerCount(tokens: { [key: string]: { [key: string]: number } }, tracker_type: string, player_id: string ): number | undefined
 	{
 		const token_info = tokens[`${tracker_type}_${player_id}`]!;
 		return token_info['state'];
+	}
+
+	// TODO: This would be nice to add as a mixin to Counter (or maybe just Common)
+	private createCounter(target: string | HTMLElement, value: number = 0) {
+		const counter = new Counter();
+		counter.create(target);
+		counter.setValue(value);
+		return counter;
 	}
 
 	onStockItemCreate( card_div: any, card_type_id: string, card_id: string ): void
@@ -332,6 +349,8 @@ class RedRisingSmiller extends CommonMixer(Gamegui)
 		} else {
 			toStock.addToStockWithId(cardType, cardId, `player_board_${notif.args.player_id}`);
 		}
+
+		this.playerBoardCounters[notif.args.player_id]?.card_hand_nbr.incValue(-1);
 	}
 
 	notif_cardPicked( notif: NotifAs<'cardPicked'>) {
@@ -348,6 +367,8 @@ class RedRisingSmiller extends CommonMixer(Gamegui)
 		} else {
 			fromStock.removeFromStockById(card.id, `player_board_${notif.args.player_id}`);
 		}
+
+		this.playerBoardCounters[notif.args.player_id]?.card_hand_nbr.incValue(1);
 
 		// MAYBE: Make this a function, when removing a card from a weighted location, reset to default weight (-1)
 		fromStock.changeItemsWeight({
