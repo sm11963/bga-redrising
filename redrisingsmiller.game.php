@@ -43,12 +43,7 @@ class RedRisingSmiller extends Table
     {
         parent::__construct();
 
-        $this->initGameStateLabels([
-            "my_first_global_variable" => 10,
-            "my_second_global_variable" => 11,
-            "my_first_game_variant" => 100,
-            "my_second_game_variant" => 101,
-        ]);
+        $this->initGameStateLabels([]);
 
         $this->tokens = new Tokens();
         $this->cards = $this->getNew( "module.common.deck" );
@@ -56,31 +51,22 @@ class RedRisingSmiller extends Table
     }
 
     /**
-     * Player action, example content.
-     *
-     * In this scenario, each time a player plays a card, this method will be called. This method is called directly
-     * by the action trigger on the front side with `bgaPerformAction`.
-     *
-     * @throws BgaSystemException
-     * @see action_redrisingsmiller::actMyAction
+     * A Player has chosen to start a Lead action by deploying $card_id to $board_location_id
      */
     public function actLead(int $card_id, int $board_location_id): void
     {
         $this->checkAction('actLead');
 
-        // Retrieve the active player ID.
         $player_id = (int)$this->getActivePlayerId();
-
-        // TODO: Validate card_id is valid.
         $card = $this->cards->getCard( $card_id );
 
-        if ($card['location'] != 'hand' || $card['location_arg'] != $player_id) {
+        if (is_null($card) || $card['location'] != 'hand' || $card['location_arg'] != $player_id) {
             throw new BgaUserException(_("The selected card must be in your hand!"));
         }
 
         $this->cards->insertCardOnExtremePosition( $card_id, "board_location_{$board_location_id}", true);
+        $this->globals->set(G_LEAD_DEPLOYED_LOCATION, $board_location_id);
 
-        // Notify all players about the card played.
         $this->notifyAllPlayers("cardDeployed", clienttranslate('${player_name} deploys ${card_id} to ${to_location}'), [
             "player_id" => $player_id,
             "player_name" => $this->getActivePlayerName(),
@@ -92,11 +78,13 @@ class RedRisingSmiller extends Table
         $this->gamestate->nextState("tLead");
     }
 
+    /**
+     * A Player has chosen to start a Scout action. 
+     */
     public function actScout(): void
     {
         $this->checkAction('actScout');
 
-        // Retrieve the active player ID.
         $player_id = (int)$this->getActivePlayerId();
 
         // Notify all players about the choice to pass.
@@ -109,16 +97,25 @@ class RedRisingSmiller extends Table
         $this->gamestate->nextState("pass");
     }
 
+    /**
+     * As part of a lead turn, the a player has chosen to pick up $card_id from the board.
+     */
     public function actLeadPick(int $card_id): void {
         $this->checkAction('actLeadPick');
-        // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
 
-        // TODO: Validate card_id is valid.
+        $player_id = (int)$this->getActivePlayerId();
+        $board_location_prefix = 'board_location_';
         $card = $this->cards->getCard( $card_id );
 
-        if (!str_starts_with($card['location'], 'board_location_')) {
+        if (is_null($card) || !str_starts_with($card['location'], $board_location_prefix)) {
             throw new BgaUserException(_("The selected card must be currently on top of a location on the board!"));
+        }
+
+        $board_location_id = (int) substr($card['location'], strlen($board_location_prefix));
+        
+        $deployed_location = $this->globals->get(G_LEAD_DEPLOYED_LOCATION);
+        if (!is_null($deployed_location) && $deployed_location == $board_location_id) {
+            throw new BgaUserException(_("You cannot pickup from the location you deployed to this turn!"));
         }
 
         $locationTopCard = $this->cards->getCardOnTop( $card['location'] );
@@ -129,12 +126,11 @@ class RedRisingSmiller extends Table
 
         $this->cards->moveCard( $card_id, 'hand', $player_id );
 
-        // Notify all players about the card played.
         $this->notifyAllPlayers("cardPicked", clienttranslate('${player_name} picks up ${card_id} from location ${prev_location}'), [
             "player_id" => $player_id,
             "player_name" => $this->getActivePlayerName(),
             "card_id" => $card_id,
-            "prev_location" => (int) substr($card['location'], strlen('board_location_')),
+            "prev_location" => $board_location_id,
         ]);
 
         $this->gamestate->nextState("tLeadPick");
@@ -186,6 +182,9 @@ class RedRisingSmiller extends Table
     public function stNextPlayer(): void {
         // Retrieve the active player ID.
         $player_id = (int)$this->getActivePlayerId();
+
+        // Clear turn specific state
+        $this->globals->delete(G_LEAD_DEPLOYED_LOCATION);
 
         // Give some extra time to the active player when he completed an action
         $this->giveExtraTime($player_id);
@@ -279,11 +278,6 @@ class RedRisingSmiller extends Table
         $this->initTokens();
 
         $this->initCards();
-
-        // Init global values with their initial values.
-
-        // Dummy content.
-        $this->setGameStateInitialValue("my_first_global_variable", 0);
 
         // Init game statistics.
         //

@@ -292,24 +292,33 @@ define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "e
             console.log("Stock ".concat(control_name, " selected ").concat(item_id));
             var card_id = toint(item_id);
             if (this.gamedatas.gamestate.name == 'playerLeadPick') {
-                var stock = (_a = Object.entries(this.boardLocationStocks).find(function (_a) {
+                if (this.playerHand.control_name == control_name && this.playerHand.isSelected(card_id)) {
+                    this.showMessage(_("Please select a card from a board location to pick up."), 'info');
+                    this.playerHand.unselectItem(card_id);
+                    return;
+                }
+                var stock_1 = (_a = Object.entries(this.boardLocationStocks).find(function (_a) {
                     var k = _a[0], stock = _a[1];
                     return stock.control_name == control_name;
                 })) === null || _a === void 0 ? void 0 : _a[1];
-                if (stock === undefined) {
-                    console.warn(_("Something went wrong and a card location was not found."));
+                if (stock_1 === undefined) {
+                    console.warn("Something went wrong and card location \"".concat(control_name, "\" was not found."));
                     return;
                 }
-                if (!stock.isSelected(card_id)) {
+                if (!stock_1.isSelected(card_id)) {
                     return;
                 }
-                var locationTopItem = stock.getAllItems().pop();
+                var locationTopItem = stock_1.getAllItems().pop();
                 if (locationTopItem === undefined || locationTopItem.id != card_id) {
                     this.showMessage(_("You can only pickup the top card from a location! Please select a top card."), "error");
                     return;
                 }
-                this.bgaPerformAction("actLeadPick", {
-                    card_id: card_id
+                this.ajaxAction("actLeadPick", {
+                    card_id: card_id,
+                }, function (is_error) {
+                    if (is_error) {
+                        stock_1.unselectItem(card_id);
+                    }
                 });
             }
         };
@@ -328,7 +337,7 @@ define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "e
         RedRisingSmiller.prototype.onActLeadSelected = function (board_location_id) {
             var selectedItems = this.playerHand.getSelectedItems();
             if (selectedItems.length == 1 && selectedItems[0] !== undefined) {
-                this.bgaPerformAction("actLead", {
+                this.ajaxAction('actLead', {
                     card_id: selectedItems[0].id,
                     board_location_id: board_location_id,
                 });

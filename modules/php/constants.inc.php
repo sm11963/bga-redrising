@@ -38,7 +38,8 @@ const MA_BOARD_LOCATION_LUNA = 2;
 const MA_BOARD_LOCATION_INSTITUTE = 3;
 
 /**
- * State constants
+ * Global variables constants
  */
+const G_LEAD_DEPLOYED_LOCATION = 'lead_deployed_location';
 
   

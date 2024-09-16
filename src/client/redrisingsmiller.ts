@@ -178,15 +178,17 @@ class RedRisingSmiller extends CommonMixer(Gamegui)
 		const card_id = toint(item_id)!;
 
 		if (this.gamedatas.gamestate.name == 'playerLeadPick') {
-			// check a card is the top card of a stock
+			if (this.playerHand.control_name == control_name && this.playerHand.isSelected(card_id)) {
+				this.showMessage(_("Please select a card from a board location to pick up."), 'info');
+				this.playerHand.unselectItem(card_id);
+				return;
+			}
 
 			const stock = Object.entries(this.boardLocationStocks).find(
 				([k, stock]) => stock.control_name == control_name
 			)?.[1];
 			if (stock === undefined) {
-				// TODO: Add actual data in this log - confirm how translation works.
-				// TODO: Also restrict selection in the hand, this will trigger this as well right now.
-				console.warn(_(`Something went wrong and a card location was not found.`));
+				console.warn(`Something went wrong and card location "${control_name}" was not found.`);
 				return ;
 			}
 
@@ -201,12 +203,13 @@ class RedRisingSmiller extends CommonMixer(Gamegui)
 				return;
 			}
 
-			// @ts-ignore
-			this.bgaPerformAction("actLeadPick", {
-				card_id: card_id
+			this.ajaxAction("actLeadPick", {
+				card_id: card_id,
+			}, (is_error) => {
+				if (is_error) {
+					stock.unselectItem(card_id);
+				}
 			});
-
-			// on notification handle, remove that card from the stock AND then readjust weights appropriately (or maybe just do this when adding to the stock?)
 		}
 	}
 
@@ -243,10 +246,9 @@ class RedRisingSmiller extends CommonMixer(Gamegui)
 	onActLeadSelected( board_location_id: number ): void {
 		const selectedItems = this.playerHand.getSelectedItems();
 		if (selectedItems.length == 1 && selectedItems[0] !== undefined) {
-			// @ts-ignore
-			this.bgaPerformAction("actLead", {
+			this.ajaxAction('actLead', {
 				card_id: selectedItems[0].id,
-				board_location_id: board_location_id,
+				board_location_id: board_location_id, 
 			});
 		} else {
 			this.showMessage(_("Lead action requires a single card selected in your hand to place on the board."),"error");
