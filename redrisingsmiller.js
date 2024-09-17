@@ -292,6 +292,11 @@ define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "e
                     this.addActionButton('player_act_deploy_institute_button', _('Deploy to The Institute'), function () { return _this.onActLeadSelected(3); });
                     this.addActionButton('player_act_scout_button', _('Scout'), 'onActScoutSelected');
                     break;
+                case 'playerScoutPlace':
+                    this.addActionButton('player_act_place_jupiter_button', _('Jupiter'), function () { return _this.onActScoutPlaceSelected(0); });
+                    this.addActionButton('player_act_place_mars_button', _('Mars'), function () { return _this.onActScoutPlaceSelected(1); });
+                    this.addActionButton('player_act_place_luna_button', _('Luna'), function () { return _this.onActScoutPlaceSelected(2); });
+                    this.addActionButton('player_act_place_institute_button', _('The Institute'), function () { return _this.onActScoutPlaceSelected(3); });
             }
         };
         RedRisingSmiller.prototype.getTrackerCount = function (tokens, tracker_type, player_id) {
@@ -368,12 +373,19 @@ define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "e
             }
         };
         RedRisingSmiller.prototype.onActScoutSelected = function () {
-            console.log('scout selected');
+            this.ajaxAction('actScout', {});
+        };
+        RedRisingSmiller.prototype.onActScoutPlaceSelected = function (board_location_id) {
+            this.ajaxAction('actScoutPlace', {
+                board_location_id: board_location_id,
+            });
         };
         RedRisingSmiller.prototype.setupNotifications = function () {
             console.log('notifications subscriptions setup');
             this.subscribeNotif('cardDeployed', this.notif_cardDeployed);
             this.subscribeNotif('cardPicked', this.notif_cardPicked);
+            this.subscribeNotif('scoutReveal', this.notif_scoutReveal);
+            this.subscribeNotif('scoutPlace', this.notif_scoutPlace);
         };
         RedRisingSmiller.prototype.notif_cardDeployed = function (notif) {
             var _a;
@@ -417,6 +429,28 @@ define("bgagame/redrisingsmiller", ["require", "exports", "ebg/core/gamegui", "e
             fromStock.changeItemsWeight((_a = {},
                 _a[card.type] = -1,
                 _a));
+        };
+        RedRisingSmiller.prototype.notif_scoutReveal = function (notif) {
+            var newTopCard = dojo.clone($('thedeckcard'));
+            newTopCard.id = 'decktopcard';
+            newTopCard.innerHTML = "<span class=\"card_title_type\">".concat(notif.args.card_id, " [").concat(notif.args.card_type, "]</span>");
+            dojo.place(newTopCard, 'thedeckcard', 'after');
+            this.placeOnObject(newTopCard, 'thedeckcard');
+        };
+        RedRisingSmiller.prototype.notif_scoutPlace = function (notif) {
+            var _a;
+            var cardId = notif.args.card_id;
+            var cardType = notif.args.card_type;
+            var toStock = this.boardLocationStocks[notif.args.board_location_id];
+            if (toStock === undefined) {
+                console.warn("Could not find location ".concat(notif.args.board_location_id, " for placed card!"));
+                return;
+            }
+            toStock.changeItemsWeight((_a = {},
+                _a[cardType] = toStock.count(),
+                _a));
+            toStock.addToStockWithId(cardType, cardId, 'decktopcard');
+            dojo.destroy('decktopcard');
         };
         return RedRisingSmiller;
     }(CommonMixer(Gamegui)));

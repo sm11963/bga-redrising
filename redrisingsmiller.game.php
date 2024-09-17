@@ -57,6 +57,10 @@ class RedRisingSmiller extends Table
     {
         $this->checkAction('actLead');
 
+        if ( !$this->checkBoardLocationId($board_location_id) ) {
+            throw new BgaVisibleSystemException("Unexpected board location select for lead action");
+        }
+
         $player_id = (int)$this->getActivePlayerId();
         $card = $this->cards->getCard( $card_id );
 
@@ -67,7 +71,9 @@ class RedRisingSmiller extends Table
         $this->cards->insertCardOnExtremePosition( $card_id, "board_location_{$board_location_id}", true);
         $this->globals->set(G_LEAD_DEPLOYED_LOCATION, $board_location_id);
 
-        $this->notifyAllPlayers("cardDeployed", clienttranslate('${player_name} deploys ${card_id} to ${to_location}'), [
+        // TODO: Message should say the location name instead of the location id
+        // TODO: Message should say the card name instead of the card_id
+        $this->notifyAllPlayers("cardDeployed", clienttranslate('${player_name} deploys ${card_type} to ${to_location}'), [
             "player_id" => $player_id,
             "player_name" => $this->getActivePlayerName(),
             "card_id" => $card_id,
@@ -87,14 +93,18 @@ class RedRisingSmiller extends Table
 
         $player_id = (int)$this->getActivePlayerId();
 
-        // Notify all players about the choice to pass.
-        $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} passes'), [
+        $card = $this->cards->getCardOnTop( 'deck' );
+
+        // TODO: Message should say the card name instead of the card type
+        $this->notifyAllPlayers("scoutReveal", clienttranslate('${player_name} chooses to Scout and reveals top card ${card_type}'), [
             "player_id" => $player_id,
             "player_name" => $this->getActivePlayerName(),
+            "card_type" => $card['type'],
+            "card_id" => $card['id'],
         ]);
 
         // at the end of the action, move to the next state
-        $this->gamestate->nextState("pass");
+        $this->gamestate->nextState('tScout');
     }
 
     /**
@@ -126,10 +136,13 @@ class RedRisingSmiller extends Table
 
         $this->cards->moveCard( $card_id, 'hand', $player_id );
 
-        $this->notifyAllPlayers("cardPicked", clienttranslate('${player_name} picks up ${card_id} from location ${prev_location}'), [
+        // TODO: Message should say the location name instead of the location id
+        // TODO: Message should say the card name instead of the card type
+        $this->notifyAllPlayers("cardPicked", clienttranslate('${player_name} picks up ${card_type} from location ${prev_location}'), [
             "player_id" => $player_id,
             "player_name" => $this->getActivePlayerName(),
             "card_id" => $card_id,
+            "card_type" => $card['type'],
             "prev_location" => $board_location_id,
         ]);
 
@@ -137,7 +150,28 @@ class RedRisingSmiller extends Table
     }
 
     public function actScoutPlace(int $board_location_id): void {
+        $this->checkAction('actScoutPlace');
 
+        if ( !$this->checkBoardLocationId($board_location_id) ) {
+            throw new BgaVisibleSystemException("Unexpected board location select for scout place action");
+        }
+
+        $player_id = (int)$this->getActivePlayerId();
+        $card = $this->cards->getCardOnTop( 'deck' );
+
+        $this->cards->insertCardOnExtremePosition( $card['id'], "board_location_{$board_location_id}", true);
+
+        // TODO: Message should say the location name instead of the location id
+        // TODO: Message should say the card name instead of the card_type
+        $this->notifyAllPlayers("scoutPlace", clienttranslate('${player_name} places ${card_type} at location ${board_location_id}'), [
+            "player_id" => $player_id,
+            "player_name" => $this->getActivePlayerName(),
+            "card_id" => $card['id'],
+            "card_type" => $card['type'],
+            "board_location_id" => $board_location_id,
+        ]);
+
+        $this->gamestate->nextState("tScoutPlace");
     }
 
     /**
@@ -353,9 +387,6 @@ class RedRisingSmiller extends Table
         $this->cards->createCards( $cards, 'deck' );
         $this->cards->shuffle( 'deck' );
 
-        $card = $this->cards->getCardOnTop( 'deck' );
-        $this->notifyAllPlayers('top_card', '', ['card' => $card ]);
-
         foreach( $players as $player_id => $player ) {
             $num_cards = null;
 
@@ -477,7 +508,19 @@ class RedRisingSmiller extends Table
      * General Utilities                                                    *
      ************************************************************************/
     
+    /** 
+     * Loads players from the DB with additional custom fields
+     */
     private function loadPlayers(): array {
         return $this->getCollectionFromDb("SELECT player_id id, player_score score, player_no no, player_color color, player_house house FROM player");
     }
+    
+    /**
+     * Checks that the given board_location_id is valid
+     */
+    private function checkBoardLocationId( $board_location_id ): bool {
+        $values = [MA_BOARD_LOCATION_JUPITER, MA_BOARD_LOCATION_MARS, MA_BOARD_LOCATION_LUNA, MA_BOARD_LOCATION_INSTITUTE];
+        return in_array( $board_location_id, $values );
+    }
+
 }

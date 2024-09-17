@@ -164,6 +164,13 @@ class RedRisingSmiller extends CommonMixer(Gamegui)
 			this.addActionButton('player_act_deploy_institute_button', _('Deploy to The Institute'), () => this.onActLeadSelected(3));
 			this.addActionButton('player_act_scout_button', _('Scout'), 'onActScoutSelected');
 			break;
+		case 'playerScoutPlace':
+			// TODO: Use constants for board location ids
+			this.addActionButton('player_act_place_jupiter_button', _('Jupiter'), () => this.onActScoutPlaceSelected(0));
+			this.addActionButton('player_act_place_mars_button', _('Mars'), () => this.onActScoutPlaceSelected(1));
+			this.addActionButton('player_act_place_luna_button', _('Luna'), () => this.onActScoutPlaceSelected(2));
+			this.addActionButton('player_act_place_institute_button', _('The Institute'), () => this.onActScoutPlaceSelected(3));
+			
 		}
 	}
 
@@ -278,7 +285,13 @@ class RedRisingSmiller extends CommonMixer(Gamegui)
 	}
 
 	onActScoutSelected(): void {
-		console.log('scout selected');
+		this.ajaxAction('actScout', {});
+	}
+
+	onActScoutPlaceSelected( board_location_id: number ): void {
+		this.ajaxAction('actScoutPlace', {
+			board_location_id: board_location_id,
+		});
 	}
 	
 	/*
@@ -332,6 +345,8 @@ class RedRisingSmiller extends CommonMixer(Gamegui)
 		// this.subscribeNotif( 'cardPlayed', this.notif_cardPlayed ); // Adds type safety to the subscription
 		this.subscribeNotif('cardDeployed', this.notif_cardDeployed);
 		this.subscribeNotif('cardPicked', this.notif_cardPicked);
+		this.subscribeNotif('scoutReveal', this.notif_scoutReveal);
+		this.subscribeNotif('scoutPlace', this.notif_scoutPlace);
 	}
 
 	notif_cardDeployed( notif: NotifAs<'cardDeployed'> ) {
@@ -379,6 +394,37 @@ class RedRisingSmiller extends CommonMixer(Gamegui)
 		fromStock.changeItemsWeight({
 			[card.type]: -1,
 		});
+	}
+
+	notif_scoutReveal( notif: NotifAs<'scoutReveal'>) {
+		const newTopCard = dojo.clone($('thedeckcard'));
+		newTopCard!.id = 'decktopcard';
+		newTopCard!.innerHTML =	`<span class="card_title_type">${notif.args.card_id} [${notif.args.card_type}]</span>`;
+
+		dojo.place(newTopCard!, 'thedeckcard', 'after');
+		//@ts-ignore
+		this.placeOnObject(newTopCard!, 'thedeckcard');
+	}
+
+	notif_scoutPlace( notif: NotifAs<'scoutPlace'>) {
+		const cardId = notif.args.card_id;
+		const cardType = notif.args.card_type;
+		const toStock = this.boardLocationStocks[notif.args.board_location_id];
+		if (toStock === undefined) {
+			console.warn(`Could not find location ${notif.args.board_location_id} for placed card!`);
+			return;
+		}
+
+		// MAYBE: Make this a function, when adding a new card on top, the weight should just equal the number of cards
+		toStock.changeItemsWeight({
+			[cardType]: toStock.count(),
+		});
+
+		// TODO: handle case when 'decktopcard' might not be present 
+		// FIXME: Add revealing top card to setup / gamestate
+
+		toStock.addToStockWithId(cardType, cardId, 'decktopcard');
+		dojo.destroy('decktopcard');
 	}
 
 	/*

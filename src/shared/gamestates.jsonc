@@ -30,19 +30,19 @@
 	"2": {
 		"name": "playerTurn",
 		"description": "${actplayer} must lead or scout",
-		"descriptionmyturn": "${you} must lead or scout",
+		"descriptionmyturn": "${you} must choose to lead (deploy) or scout",
 		"type": "activeplayer",
 		"possibleactions": {
 			"actLead": [{ "name": "card_id", "type": "AT_int" }, {"name": "board_location_id", "type": "AT_int"}],
 			"actScout": []
 		},
-		"transitions": { "tLead": 3, "tScout": 2 }
+		"transitions": { "tLead": 3, "tScout": 4 }
 	},
 
 	"3": {
 		"name": "playerLeadPick",
 		"description": "${actplayer} must pick up a card",
-		"descriptionmyturn": "${you} must pick up a card",
+		"descriptionmyturn": "${you} must select a card to pickup",
 		"type": "activeplayer",
 		"possibleactions": {
 			"actLeadPick": [{ "name": "card_id", "type": "AT_int" }]
@@ -54,7 +54,7 @@
 	"4": {
 		"name": "playerScoutPlace",
 		"description": "${actplayer} must place the scouted card",
-		"descriptionmyturn": "${you} must place the scouted card",
+		"descriptionmyturn": "${you} must choose where to place the card",
 		"type": "activeplayer",
 		"possibleactions": {
 			"actScoutPlace": [{ "name": "board_location_id", "type": "AT_int" }]

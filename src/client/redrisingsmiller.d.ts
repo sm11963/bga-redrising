@@ -21,8 +21,11 @@ declare global {
 	/** @gameSpecific Add game specific notifications / arguments here. See {@link NotifTypes} for more information. */
 	interface NotifTypes {
 		// [name: string]: any; // Uncomment to remove type safety on notification names and arguments
+		// TODO: Can add type safety to board card_types (probably) and board_locations
 		'cardPicked': { player_id: string | number, player_name: string, card_id: number, prev_location: number };
 		'cardDeployed': { player_id: string | number, player_name: string, card_type: number, card_id: number, to_location: number };
+		'scoutReveal': { player_id: string | number, player_name: string, card_type: number, card_id: number };
+		'scoutPlace': { player_id: string | number, player_name: string, card_type: number, card_id: number, board_location_id: number };
 	}
 
 	/** @gameSpecific Add game specific gamedatas arguments here. See {@link Gamedatas} for more information. */
